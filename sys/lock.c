@@ -9,7 +9,7 @@ extern struct  lockentry locktab[NLOCKS];
 extern unsigned long ctr1000;
 int findLockOwner(ldes1);
 int findMaxPriority(ldes1);
-int updateMaxPrio(int ldes1, int maxprio)
+int updateMaxPrio(int ldes1, int maxprio);
 
 int lock (int ldes1, int type, int priority){
 	
@@ -164,7 +164,7 @@ int findMaxPriority(int ldes1)
 			prev = q[prev].qprev;
 		}
 	}
-	lptr->lpro = maxprio;
+	lptr->lprio = maxprio;
 	updateMaxPrio(ldes1, maxprio);
 }
 
