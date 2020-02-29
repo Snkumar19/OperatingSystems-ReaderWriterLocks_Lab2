@@ -13,6 +13,7 @@
 #include <q.h>
 #include <io.h>
 #include <stdio.h>
+#include <lock.h>
 
 /*#define DETAIL */
 #define HOLESIZE	(600)	
@@ -32,6 +33,7 @@ struct	pentry	proctab[NPROC]; /* process table			*/
 int	nextproc;		/* next process slot to use in create	*/
 struct	sentry	semaph[NSEM];	/* semaphore table			*/
 int	nextsem;		/* next sempahore slot to use in screate*/
+int 	nextlock; 		/* Next Lock Slot */
 struct	qent	q[NQENT];	/* q table (see queue.c)		*/
 int	nextqueue;		/* next slot in q structure to use	*/
 char	*maxaddr;		/* max memory address (set by sizmem)	*/
@@ -133,6 +135,7 @@ LOCAL int sysinit()
 	nextproc = NPROC-1;
 	nextsem = NSEM-1;
 	nextqueue = NPROC;		/* q[0..NPROC-1] are processes */
+	//nextlock = NLOCKS-1;
 
 	/* initialize free memory list */
 	/* PC version has to pre-allocate 640K-1024K "hole" */
@@ -170,7 +173,18 @@ LOCAL int sysinit()
 	pptr->paddr = (WORD) nulluser;
 	pptr->pargs = 0;
 	pptr->pprio = 0;
+	pptr->pinh = 0;
+	pptr->lockid = -5;
 	currpid = NULLPROC;
+
+	for (i=0 ; i<NPROC ; i++){       /* initialize locks */
+		proctab[i].procwaittime = 0; 
+		for (j=0 ; j<NLOCKS ; j++){  
+                	//proctab[i].locksUsed[j] = UNUSEDLOCK;   /* No locks are used  */
+			proctab[i].locksState[j] = DELETED;	/* No state for the unused locks */ 
+			//proctab[i].procwaittime = 0;
+		}
+	}
 
 	for (i=0 ; i<NSEM ; i++) {	/* initialize semaphores */
 		(sptr = &semaph[i])->sstate = SFREE;
@@ -178,6 +192,8 @@ LOCAL int sysinit()
 	}
 
 	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */
+
+	linit();
 
 #ifdef	MEMMARK
 	_mkinit();			/* initialize memory marking */

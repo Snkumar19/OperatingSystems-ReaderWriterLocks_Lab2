@@ -1,0 +1,23 @@
+#define NLOCKS	50 	/* number of locks */
+
+#define	DELETED		'\001'		/* lock is deleted*/
+#define LFREE		'\002'		/* lock is free	*/
+#define	LUSED		'\003'		/* lock acquired*/
+
+#define READ	 	'\004'          /* Read lock */
+#define WRITE 		'\005'          /* Write lock*/
+
+void linit();
+int lcreate ();
+int ldelete (int lockdescriptor);
+int lock (int ldes1, int type, int priority); 
+
+struct lockentry{
+	char lstate;
+	char ltype;
+	int lprio;
+	int lhead;
+	int ltail;
+};
+
+extern	struct	lockentry locktab[];

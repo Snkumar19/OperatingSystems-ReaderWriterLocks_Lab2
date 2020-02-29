@@ -9,6 +9,10 @@
 #define	NPROC		30		/*  allowed if not already done	*/
 #endif
 
+#ifndef NLOCKS                           
+#define NLOCKS          50              
+#endif
+
 #ifndef	_NFILE
 #define _NFILE		20		/* # of files allowed */
 #endif
@@ -60,6 +64,11 @@ struct	pentry	{
 	int	fildes[_NFILE];		/* file - device translation	*/
 	int	ppagedev;		/* pageing dgram device		*/
 	int	pwaitret;
+	
+	int 	locksState[NLOCKS];		/* State of the associated locks */
+	unsigned long 	procwaittime;		/* Proces Wait time in the Queue */
+	int 	pinh;
+	int lockid;
 };
 
 
