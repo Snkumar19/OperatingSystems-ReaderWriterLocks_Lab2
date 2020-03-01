@@ -20,20 +20,18 @@ int ldelete (int lockdescriptor)
 
 	lptr = &locktab[lockdescriptor];
 	lptr->lstate = LFREE;
+	lptr->ltype = EMPTY;
+	lptr->lprio = -1;
+	lptr->lproc[currpid] = LOCKNOTACQ;
 
-	int i = 0;
-	for( i = 0; i < NPROC; i++)
-	{
-		
-		pptr = &proctab[i];
-		pptr->locksState[lockdescriptor] = DELETED;
-	}
 	
 	if (nonempty(lptr->lhead)) {
 		while( (pid=getfirst(lptr->lhead)) != EMPTY)
 		  {
+			proctab[pid].locksState[lockdescriptor] = DELETED;
+			proctab[pid].lockid = -1;
 		    	proctab[pid].pwaitret = DELETED;
-		    ready(pid,RESCHNO);
+		    	ready(pid,RESCHNO);
 		  }
 		resched();
 	}

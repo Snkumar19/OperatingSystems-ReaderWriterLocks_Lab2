@@ -23,12 +23,12 @@ int lock (int ldes1, int type, int priority){
                 return(SYSERR);
         }
 
-	int ownerofLock = findLockOwner(ldes1);
+//	int ownerofLock = findLockOwner(ldes1);
 	kprintf("\nMax prio: %d\n", findMaxPriority(ldes1));
-	if (ownerofLock == -1)
-		ownerofLock = currpid; 
+//	if (ownerofLock == -1)
+//		ownerofLock = currpid; 
 	
-	if (locktab[ldes1].lstate == LFREE)
+	if (locktab[ldes1].lstate == LCREATE)
 	{
 		pptr->lockid = -1;
 		lptr->lstate = LUSED;

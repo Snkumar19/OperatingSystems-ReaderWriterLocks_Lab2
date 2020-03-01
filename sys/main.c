@@ -120,9 +120,9 @@ void test2 ()
         assert (lck != SYSERR, "Test 2 failed");
 
 	rd1 = create(reader2, 2000, 20, "reader2", 3, 'A', lck, 20);
-	rd2 = create(writer2, 2000, 23, "reader2", 3, 'B', lck, 30);
-	rd3 = create(writer2, 2000, 25, "reader2", 3, 'D', lck, 25);
-	rd4 = create(writer2, 2000, 24, "reader2", 3, 'E', lck, 20);
+	rd2 = create(reader2, 2000, 20, "reader2", 3, 'B', lck, 30);
+	rd3 = create(reader2, 2000, 20, "reader2", 3, 'D', lck, 25);
+	rd4 = create(reader2, 2000, 20, "reader2", 3, 'E', lck, 20);
         wr1 = create(writer2, 2000, 20, "writer2", 3, 'C', lck, 28);
 	
         kprintf("-start reader A, then sleep 1s. lock granted to reader A\n");
@@ -226,7 +226,7 @@ int main( )
  *          * The provided results do not guarantee your correctness.
  *                   * You need to read the PA2 instruction carefully.
                             */
-	//test1();
+	test1();
 	test2();
 //	test3();
 

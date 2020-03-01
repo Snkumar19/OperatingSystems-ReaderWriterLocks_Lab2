@@ -20,7 +20,7 @@ int lcreate()
 		return(SYSERR);
 	}
 	
-	locktab[ldesc].lcount = 1; /* initialize lock count to 1 when created */
+//	locktab[ldesc].lcount = 1; /* initialize lock count to 1 when created */
         
 
 	restore(ps);

@@ -34,7 +34,7 @@ void release(int *ldes)
 	lptr->lproc[currpid] = LOCKNOTACQ;
 	
 	lptr->lprio = 0;
-	pptr->locksState[lockdes] = NOSTATE;
+	pptr->locksState[lockdes] = DELETED;
 
 	int readerCount = 0, i =0;
 
@@ -49,7 +49,7 @@ void release(int *ldes)
 
 	int prev,pid;
 	kprintf("\nreaderCount = %d", readerCount);
-	if(lptr->ltype==WRITE || !readerCount )
+	if(lptr->ltype==WRITE || readerCount==0 )
 	{
 		/* add processes to ready Queue*/
 		

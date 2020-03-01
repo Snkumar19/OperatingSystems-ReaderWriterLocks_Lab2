@@ -33,7 +33,7 @@ struct lockentry{
 	int lprio;
 	int lhead;
 	int ltail;
-	int lcount;
+	//int lcount;
 	int lproc[NPROC];
 	//int lwaittime[NPROC];
 };

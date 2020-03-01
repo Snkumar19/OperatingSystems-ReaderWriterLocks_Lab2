@@ -181,7 +181,7 @@ LOCAL int sysinit()
 		proctab[i].procwaittime = 0; 
 		for (j=0 ; j<NLOCKS ; j++){  
                 	//proctab[i].locksUsed[j] = UNUSEDLOCK;   /* No locks are used  */
-			proctab[i].locksState[j] = DELETED;	/* No state for the unused locks */ 
+			proctab[i].locksState[j] = EMPTY;	/* No state for the unused locks */ 
 			//proctab[i].procwaittime = 0;
 		}
 	}

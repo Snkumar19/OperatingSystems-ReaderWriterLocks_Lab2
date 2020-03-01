@@ -20,6 +20,7 @@ void linit()
 	for (i = 0 ; i<NLOCKS ; i++) {	
 		(lptr = &locktab[i])->lstate = LFREE;
 		lptr->ltype = EMPTY;
+	
 		lptr->ltail = 1 + (lptr->lhead = newqueue());
 			
 		  /* initialize priority */
