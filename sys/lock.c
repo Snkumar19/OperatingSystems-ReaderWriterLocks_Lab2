@@ -7,9 +7,6 @@
 
 extern struct  lockentry locktab[NLOCKS];
 extern unsigned long ctr1000;
-int findLockOwner(ldes1);
-int findMaxPriority(ldes1);
-int updateMaxPrio(int ldes1, int maxprio);
 
 int lock (int ldes1, int type, int priority){
 	
@@ -24,11 +21,12 @@ int lock (int ldes1, int type, int priority){
         }
 
 //	int ownerofLock = findLockOwner(ldes1);
-	kprintf("\nMax prio: %d\n", findMaxPriority(ldes1));
+//	kprintf("\nMax prio: %d\n", findMaxPriority(ldes1));
+//	updateMaxPrio(ldes1,priority, currpid);
 //	if (ownerofLock == -1)
 //		ownerofLock = currpid; 
 	
-	if (locktab[ldes1].lstate == LCREATE)
+	if (locktab[ldes1].lstate == LCREATE || locktab[ldes1].lstate == LFREE)
 	{
 		pptr->lockid = -1;
 		lptr->lstate = LUSED;
@@ -38,6 +36,7 @@ int lock (int ldes1, int type, int priority){
 
 		pptr->locksState[ldes1] = type;
 		//kprintf ("\n LOCK LSTATE IS FREE : %d, %d, %d, %d %d\n",ldes1, ownerofLock, lptr->lproc[ownerofLock], pptr->locksState[ldes1],lptr->lprio );
+
 		restore(ps);
 		return(OK);
 	}
@@ -49,8 +48,10 @@ int lock (int ldes1, int type, int priority){
 			pptr->lockid = ldes1;
                         pptr->locksState[ldes1] = type;
                         pptr->procwaittime = ctr1000;
-			updateMaxPrio(ldes1, pptr->pprio);
+		//	updateMaxPrio(ldes1, pptr->pprio);
                         insert(currpid, lptr->lhead, priority);
+			lptr->lprio = findMaxPriority(ldes1);
+		//	updateMaxPrio(ldes1,priority, currpid);
                         resched();
                         restore(ps);
                         return(OK);
@@ -73,14 +74,16 @@ int lock (int ldes1, int type, int priority){
 				pptr->lockid = ldes1;
                        		pptr->locksState[ldes1] = type;
                        		pptr->procwaittime = ctr1000;
-				updateMaxPrio(ldes1, pptr->pprio);
+			//	updateMaxPrio(ldes1, pptr->pprio);
                         	insert(currpid, lptr->lhead, priority);
+				lptr->lprio = findMaxPriority(ldes1);
                         	resched();
                        		restore(ps);
                         	return(OK);
 			}
 			else
 			{
+				kprintf("\nThis case\n");
 				lptr->lprio = priority;
         	                lptr->lproc[currpid] = LOCKACQ;
 
@@ -100,8 +103,9 @@ int lock (int ldes1, int type, int priority){
 			pptr->lockid = ldes1;
                         pptr->locksState[ldes1] = type;
                         pptr->procwaittime = ctr1000;
-			updateMaxPrio(ldes1, pptr->pprio);
+			//updateMaxPrio(ldes1, pptr->pprio);
                         insert(currpid, lptr->lhead, priority);
+			lptr->lprio = findMaxPriority(ldes1);
                         resched();
                         restore(ps);
                         return(OK);
@@ -130,7 +134,7 @@ int findHigherPriorityWriter(int priority, int ldes1)
 	return 0;
 }
 
-
+/*
 int findLockOwner(ldes1)
 {
 	struct  lockentry *lptr = &locktab[ldes1];
@@ -146,46 +150,5 @@ int findLockOwner(ldes1)
 	return -1;
 }
 
-int findMaxPriority(int ldes1)
-{
-	struct  lockentry *lptr = &locktab[ldes1];
-	struct pentry *pptr = &proctab[currpid];
-	int maxprio = 0;
-	int prev;
 
-	if (nonempty(lptr->lhead))
-	{
-		prev = q[lptr->ltail].qprev;	
-		 while(prev<NPROC)
-        	{
-			pptr = &proctab[prev];
-			if (pptr->pprio > maxprio)
-				maxprio = pptr->pprio;
-			prev = q[prev].qprev;
-		}
-	}
-	lptr->lprio = maxprio;
-	updateMaxPrio(ldes1, maxprio);
-}
-
-int updateMaxPrio(int ldes1, int maxprio)
-{
-	struct pentry *pptr = &proctab[currpid];
-	int i = 0;
-	for( i =0; i< NPROC; i++)
-	{
-		pptr = &proctab[i];
-		if(pptr->locksState[ldes1] != DELETED && locktab[ldes1].lproc[i] == LOCKACQ)
-		{
-			if(pptr->pinh < maxprio){
-				pptr->pprio = maxprio;
-				findMaxPriority(i);
-			}
-			else
-				pptr->pprio = pptr->pinh;
-		}
-	}
-}
-
-
-
+*/

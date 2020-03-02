@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include <proc.h>
 #include <lock.h>
+#include <q.h>
 #include <stdio.h>
 
 #define DEFAULT_LOCK_PRIO 20
@@ -72,6 +73,7 @@ void test1 ()
 		}
 	}
 */
+	ldelete (lck);
 	kprintf ("Test 1 ok\n");
 }
 
@@ -136,7 +138,16 @@ void test2 ()
         resume (rd2);
 	resume (rd3);
 	resume (rd4);
+	int prev;
 
+	struct  lockentry *lptr = &locktab[lck];
+	prev = q[lptr->ltail].qprev;
+	  while(prev<NPROC)
+          {
+               kprintf("\nQ: %d", q[prev].qkey);
+		kprintf("\nType: %d", lptr->lproc[q[prev].qkey]);
+                prev =  q[prev].qprev;
+           }
 
         sleep (15);
         kprintf("output=%s\n", output2);
@@ -214,8 +225,8 @@ int main( )
         /* These test cases are only used for test purposes.
  *          * The provided results do not guarantee your correctness.
  *                   * You need to read the PA2 instruction carefully.
- *                            */
-//	test1();
+                            */
+	test1();
 	test2();
 //	test3();
 

@@ -51,7 +51,7 @@ SYS =	blkcmp.c	blkequ.c	main.c		stacktrace.c	\
 	unsleep.c	userret.c	wait.c		wakeup.c	\
 	write.c		xdone.c		pci.c		shutdown.c	\
 	linit.c		lcreate.c	ldelete.c	lock.c		\
-	releaseall.c			
+	releaseall.c	priorityInheritance.c			
 TTY =	ttyalloc.c	ttycntl.c	ttygetc.c	ttyiin.c	\
 	ttyinit.c	ttynew.c	ttyopen.c	ttyputc.c	\
 	ttyread.c	ttywrite.c	ttyoin.c
@@ -453,7 +453,7 @@ main.o: ../sys/main.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/q.h ../h/stdio.h
 main-copy.o: ../sys/main-copy.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/lock.h \
- ../h/stdio.h
+ ../h/q.h ../h/stdio.h
 main-org.o: ../sys/main-org.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/stdio.h
 mark.o: ../sys/mark.c /usr/include/stdc-predef.h ../h/conf.h \
@@ -472,6 +472,9 @@ pci.o: ../sys/pci.c /usr/include/stdc-predef.h ../h/conf.h ../h/kernel.h \
 poolinit.o: ../sys/poolinit.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/mark.h ../h/bufpool.h \
  ../h/stdio.h
+priorityInheritance.o: ../sys/priorityInheritance.c \
+ /usr/include/stdc-predef.h ../h/conf.h ../h/kernel.h ../h/systypes.h \
+ ../h/mem.h ../h/proc.h ../h/q.h ../h/lock.h ../h/stdio.h
 putc.o: ../sys/putc.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/io.h
 queue.o: ../sys/queue.c /usr/include/stdc-predef.h ../h/conf.h \

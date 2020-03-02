@@ -25,6 +25,9 @@ void linit();
 int lcreate ();
 int ldelete (int lockdescriptor);
 int lock (int ldes1, int type, int priority); 
+int findMaxPriority(int ldes1);
+int updateMaxPrio(int ldes1, int maxprio, int currpid);
+int findPrio(int pid);
 
 #define isbadlock(s)     (s<0 || s>=NLOCKS)
 struct lockentry{

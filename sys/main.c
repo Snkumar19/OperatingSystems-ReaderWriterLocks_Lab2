@@ -55,9 +55,10 @@ void test1 ()
 	resume(pid2);
 
 	sleep (15);
+	ldelete (lck);
 /*	
 	sleep (5);
-	ldelete (lck);
+//	ldelete (lck);
 
 	struct  lockentry *lptr;
 	struct pentry *pptr;

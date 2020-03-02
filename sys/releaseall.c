@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <lock.h>
 
+void lockAcquired(int highestWriterOrReader, int lockdes, int type);
 int releaseall (int numlocks, int args)
 {
 	 STATWORD ps;
@@ -26,17 +27,10 @@ void release(int *ldes)
 {
 	struct pentry *pptr = &proctab[currpid];
 	int lockdes = *ldes;
+	int prev,pid;
 	struct  lockentry *lptr = &locktab[lockdes];
-//	kprintf("\nLockdes = %d\n", lockdes);
 
-
-	//lptr->lstate = LFREE;
-	lptr->lproc[currpid] = LOCKNOTACQ;
-	
-	lptr->lprio = 0;
-	pptr->locksState[lockdes] = DELETED;
-
-	int readerCount = 0, i =0;
+	int readerCount = 0, i =0, lastReaderCheck = 0;
 
 	if(lptr->ltype==READ)
 	{
@@ -47,9 +41,14 @@ void release(int *ldes)
 		}
 	}
 
-	int prev,pid;
+	if(readerCount == 1)
+		lastReaderCheck = 1;
+
+	lptr->lproc[currpid] = LOCKNOTACQ;
 	kprintf("\nreaderCount = %d", readerCount);
-	if(lptr->ltype==WRITE || readerCount==0 )
+
+	/* If last reader or writer releases the lock, it can be acquired by reader/writer */
+	if(lptr->ltype==WRITE || lastReaderCheck )
 	{
 		/* add processes to ready Queue*/
 		
@@ -59,8 +58,6 @@ void release(int *ldes)
 		int highestReaderPriority = 0;
 		prev = q[lptr->ltail].qprev;
 		//kprintf("\nlptr tail - %d\n", prev);
-
-		 prev = q[lptr->ltail].qprev;
 
 		if (prev < NPROC)
 		{
@@ -89,52 +86,36 @@ void release(int *ldes)
 
 			prev = q[lptr->ltail].qprev;
 
-			/* if reader and writer have the same priorities, based on ctr1000 values schedule reader or writer (if difference id less than 0.4s)*/
-			if(highestReaderPriority == highestWriterPriority)
+			
+			/* WRITER can acquire lock under 2 conditions:
+ 			* 1. When reader and writer have equal priority and wait time is greater than 400
+ 			* 2. When writer priority is greater than readre priority */
+			if(((highestReaderPriority == highestWriterPriority) && (&proctab[highestWriter].procwaittime  -  &proctab[highestReader].procwaittime >  400)) || (highestWriterPriority != 0 && highestWriterPriority > highestReaderPriority))
                         {
-                                if( &proctab[highestWriter].procwaittime  -  &proctab[highestReader].procwaittime  <= 400)
+				lockAcquired(highestWriter, lockdes, WRITE);
+			}
+			/* READER can acuire can lock when both reader have same priority and the wait time differnce is less than 400ms */
+                        else if((highestReaderPriority == highestWriterPriority) && (&proctab[highestWriter].procwaittime  -  &proctab[highestReader].procwaittime  <= 400))
+                        {
+				while((highestReaderPriority == highestWriterPriority) && (&proctab[highestWriter].procwaittime  -  &proctab[highestReader].procwaittime  <= 400) && (prev < NPROC))
                                 {
-                                        pid = dequeue(highestReader);
-                                        lptr->ltype = READ;
-                                        pptr->locksState[lockdes] = READ;
-
-                                }
-                                else
-                                {
-                                        pid = dequeue(highestWriter);
-                                        lptr->ltype = WRITE;
-                                        pptr->locksState[lockdes] = WRITE;
-
-                                }
-				proctab[pid].procwaittime = 0;
-                                lptr->lstate = LUSED;
-				lptr->lproc[pid] = LOCKACQ;
-				ready(pid, RESCHNO);
-                        }
-
-			/* writer has the highest priority, dequeue that process */
-			else if (highestWriterPriority != 0 && highestWriterPriority > highestReaderPriority)
-			{
-				pid = dequeue(highestWriter);	
-				lptr->lstate = LUSED;
-               		 	lptr->ltype = WRITE;
-                		lptr->lproc[pid] = LOCKACQ;
-                		pptr->locksState[lockdes] = WRITE;
-				ready(pid, RESCHNO);	
+					lockAcquired(highestReader, lockdes, READ);
+					
+					prev =  q[prev].qprev;
+                                        if(proctab[prev].locksState[lockdes] == READ){
+                                                highestReader = prev;
+                                                highestReaderPriority = q[prev].qkey;
+                                        }
+                        	}
 			}
 
-			/* reader has the highest priority, dequeue all the processes that have priority gerater than the writer process */
+			/* READER can acquire lock when reader has higher priority than writer */
 			else if (highestReaderPriority != 0 && highestWriterPriority < highestReaderPriority) 
 			{
 				while(highestReaderPriority > highestWriterPriority && prev < NPROC)
 				{
 					//kprintf("\nlptr q - %d\n", prev);
-					pid = dequeue(highestReader);
-                        		lptr->lstate = LUSED;
-                        		lptr->ltype = READ;
-                        		lptr->lproc[pid] = LOCKACQ;
-                        		pptr->locksState[lockdes] = READ;
-        	               		ready(pid, RESCHNO);
+					lockAcquired(highestReader, lockdes, READ);
 
 					prev =  q[prev].qprev;
 					if(proctab[prev].locksState[lockdes] == READ){
@@ -146,9 +127,32 @@ void release(int *ldes)
 			}
 			resched();
 		}
+		/* If Wait Queue is empty, change state to free */
 		else
 		{
 		 	lptr->lstate = LFREE;
+			pptr->locksState[lockdes] = EMPTY;
 		}
 	}
+	else
+	{
+		proctab[currpid].locksState[lockdes] = EMPTY;
+		lptr->lstate = LUSED;
+		lptr->ltype = READ;
+	}
+}
+
+void lockAcquired(int highestWriterOrReader, int lockdes, int type)
+{
+        struct  lockentry *lptr = &locktab[lockdes];
+	int pid;
+	pid = dequeue(highestWriterOrReader);
+        lptr->lprio = findMaxPriority(lockdes);
+        lptr->lstate = LUSED;
+        lptr->ltype = type;
+        lptr->lproc[pid] = LOCKACQ;
+        proctab[pid].locksState[lockdes] = type;
+        proctab[pid].procwaittime = 0;
+        ready(pid, RESCHNO);
+
 }
