@@ -51,7 +51,7 @@ int lock (int ldes1, int type, int priority){
 		//	updateMaxPrio(ldes1, pptr->pprio);
                         insert(currpid, lptr->lhead, priority);
 			lptr->lprio = findMaxPriority(ldes1);
-		//	updateMaxPrio(ldes1,priority, currpid);
+			//updateMaxPrio(ldes1,priority, currpid);
                         resched();
                         restore(ps);
                         return(OK);
@@ -76,6 +76,7 @@ int lock (int ldes1, int type, int priority){
                        		pptr->procwaittime = ctr1000;
 			//	updateMaxPrio(ldes1, pptr->pprio);
                         	insert(currpid, lptr->lhead, priority);
+			//	updateMaxPrio(ldes1, pptr->pprio, currpid);
 				lptr->lprio = findMaxPriority(ldes1);
                         	resched();
                        		restore(ps);
@@ -105,6 +106,7 @@ int lock (int ldes1, int type, int priority){
                         pptr->procwaittime = ctr1000;
 			//updateMaxPrio(ldes1, pptr->pprio);
                         insert(currpid, lptr->lhead, priority);
+			//updateMaxPrio(ldes1, pptr->pprio, currpid);
 			lptr->lprio = findMaxPriority(ldes1);
                         resched();
                         restore(ps);

@@ -19,6 +19,7 @@ int releaseall (int numlocks, int args)
 		release(a);
 		a--;
 	}
+//	updateMaxPrio(*a,0, currpid);
 	restore(ps);
 	return OK;
 }
@@ -45,13 +46,14 @@ void release(int *ldes)
 		lastReaderCheck = 1;
 
 	lptr->lproc[currpid] = LOCKNOTACQ;
-	kprintf("\nreaderCount = %d", readerCount);
+//	kprintf("\nreaderCount = %d", readerCount);
 
 	/* If last reader or writer releases the lock, it can be acquired by reader/writer */
 	if(lptr->ltype==WRITE || lastReaderCheck )
 	{
 		/* add processes to ready Queue*/
 		
+		kprintf("\nWRiter realeased lock\n");
 		int highestWriter = -1;
 		int highestReader = -2;
 		int highestWriterPriority = 0;
@@ -61,7 +63,15 @@ void release(int *ldes)
 
 		if (prev < NPROC)
 		{
-			/* Find the writer with highest priority from lock queue */
+
+			while(prev<NPROC)
+                        {
+                                if(proctab[prev].locksState[lockdes] == READ){
+                      			kprintf("\nREAD=%d",q[prev].qkey); 
+                                }
+                                prev =  q[prev].qprev;
+                        }
+			prev = q[lptr->ltail].qprev;
 			while(prev<NPROC)
 			{
 				//kprintf("type: %d", proctab[prev].locksState[lockdes]);
@@ -114,10 +124,13 @@ void release(int *ldes)
 			{
 				while(highestReaderPriority > highestWriterPriority && prev < NPROC)
 				{
-					//kprintf("\nlptr q - %d\n", prev);
+					kprintf("\nHIT THIS CASE----------------\n");
+
+					kprintf("\nQueue Item =%d\n",highestReader);
 					lockAcquired(highestReader, lockdes, READ);
 
-					prev =  q[prev].qprev;
+					prev =  q[lptr->ltail].qprev;
+					kprintf("\nQueue Item2 =%d\n",q[prev].qkey);
 					if(proctab[prev].locksState[lockdes] == READ){
 						highestReader = prev;
                                         	highestReaderPriority = q[prev].qkey;

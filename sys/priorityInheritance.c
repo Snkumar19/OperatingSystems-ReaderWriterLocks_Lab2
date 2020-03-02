@@ -35,7 +35,7 @@ int findMaxPriority(int ldes1)
                 }
         }
         kprintf("MAX PRIO = %d\n", maxprio);
-        lptr->lprio = maxprio;
+       // lptr->lprio = maxprio;
         /*updateMaxPrio(ldes1, maxprio);*/
         return maxprio;
 }
@@ -46,51 +46,53 @@ int updateMaxPrio(int ldes1, int maxprio, int pid)
         struct  lockentry *lptr;
         int prev;
         struct pentry *pptr = &proctab[pid];
-        int i = 0, mprio = pptr->pprio, flag = 0;
-                        
-        kprintf("\nlocktab[i].lproc[currpid] = %d", locktab[ldes1].lproc[currpid]);
-        kprintf("\npptr->locksState[i] = %d", pptr->locksState[ldes1]);
-        
-        if((pptr->locksState[ldes1] == READ || pptr->locksState[ldes1] == WRITE) && locktab[ldes1].lstate == LUSED)
+        int i = 0, mprio = 0, flag = 0;
+	int lockWithMaxPrio, lockToBeUpdated;
+
+
+	for(i = 0; i < NLOCKS; i++)
+	{
+		lptr = &locktab[i];
+		lptr->lprio = findMaxPriority(i);
+		kprintf("\n lptr->lprio = %d", lptr->lprio);
+	}
+
+	for(i = 0; i < NLOCKS; i++)
         {
-                kprintf("INSIDE UPDATE - MAX PRIO = %d\n", findMaxPriority(ldes1));
-                
-                if(findMaxPriority(ldes1))
-                {
-                        if (findMaxPriority(ldes1) > pptr->pprio)
-                                mprio = findMaxPriority(ldes1);
-                }
-                kprintf("\nmprio = %d", mprio);
-        }
+		lptr = &locktab[i];
+		if((pptr->locksState[i] == READ || pptr->locksState[i] == WRITE) && (locktab[i].lstate == LUSED))
+		{
+			if (lptr->lprio > mprio)
+			{	
+				mprio = lptr->lprio;
+				lockWithMaxPrio = i;
+			}
+		}
+	}
 
-        
-        if(mprio > pptr->pprio)
- {
-                kprintf("\npptr->pprio= %d",pptr->pprio );
-                pptr->pinh = mprio;
+	if(mprio > 0)
+	{
+		if (mprio > pptr->pprio)
+			pptr->pinh = mprio;
+		else
+			pptr->pinh = 0;
+	}
+	else
+		pptr->pinh = 0;
+                        
 
-                for (i =0; i< NLOCKS; i++)
-                {
-                        lptr = &locktab[i];
-                        if (nonempty(lptr->lhead))
-                        {
-                                prev = q[lptr->ltail].qprev;
-                                  while(prev<NPROC)
-                                {
-                                        if (pid == prev){
-                                                flag = 1;
-                                                break;
-                                        }
-                                        prev = q[prev].qprev;
-                                }
-                                if (flag)
-                                        break;
+	kprintf("\npptr->pinh=%d",pptr->pinh);
+	if (pptr->procwaittime > 0)
+	{	
+		lptr = &locktab[pptr->lockid];
+		lptr->lprio = findMaxPriority(pptr->lockid);
 
-                        }
-                }
-                kprintf("\npinh = %d",pptr->pinh);
-                if(flag)
-                        updateMaxPrio(i, maxprio, prev);
+
+		for (i =0;i< NPROC; i++)
+		{
+			if(lptr->lproc[i] == LOCKACQ)
+				updateMaxPrio(ldes1, maxprio, i);
+		}
         }
 }
 
