@@ -29,7 +29,7 @@ int ldelete (int lockdescriptor)
 		while( (pid=getfirst(lptr->lhead)) != EMPTY)
 		  {
 			proctab[pid].locksState[lockdescriptor] = DELETED;
-			proctab[pid].lockid = -1;
+			proctab[pid].lockid = NOTINWQ;
 		    	proctab[pid].pwaitret = DELETED;
 		    	ready(pid,RESCHNO);
 		  }

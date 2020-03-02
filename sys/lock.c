@@ -28,7 +28,7 @@ int lock (int ldes1, int type, int priority){
 	
 	if (locktab[ldes1].lstate == LCREATE || locktab[ldes1].lstate == LFREE)
 	{
-		pptr->lockid = -1;
+		pptr->lockid = NOTINWQ;
 		lptr->lstate = LUSED;
 		lptr->ltype = type;
 		lptr->lprio = priority;

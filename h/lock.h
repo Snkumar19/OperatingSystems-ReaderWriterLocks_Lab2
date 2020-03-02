@@ -21,6 +21,8 @@
 #define LOCKACQ 	1
 #define LOCKNOTACQ	-1
 
+#define NOTINWQ  -1
+
 void linit();
 int lcreate ();
 int ldelete (int lockdescriptor);

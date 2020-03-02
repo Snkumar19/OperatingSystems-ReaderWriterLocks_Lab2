@@ -174,7 +174,7 @@ LOCAL int sysinit()
 	pptr->pargs = 0;
 	pptr->pprio = 0;
 	pptr->pinh = 0;
-	pptr->lockid = -5;
+	pptr->lockid = NOTINWQ;
 	currpid = NULLPROC;
 
 	for (i=0 ; i<NPROC ; i++){       /* initialize locks */

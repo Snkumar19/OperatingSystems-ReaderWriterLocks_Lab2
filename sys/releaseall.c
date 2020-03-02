@@ -10,7 +10,10 @@ int releaseall (int numlocks, int args)
 {
 	 STATWORD ps;
         disable(ps);
+
+
 	//kprintf("\nIn releaseAll\n");
+
 	int *a;	
 	a = &args;
 	int i = 0;
@@ -26,10 +29,17 @@ int releaseall (int numlocks, int args)
 
 void release(int *ldes)
 {
+	 STATWORD ps;
+        disable(ps);
 	struct pentry *pptr = &proctab[currpid];
 	int lockdes = *ldes;
 	int prev,pid;
 	struct  lockentry *lptr = &locktab[lockdes];
+
+	 if (isbadlock(lockdes) || pptr->locksState[lockdes] == DELETED || pptr->locksState[lockdes] == EMPTY) {
+                restore(ps);
+                return(SYSERR);
+        }
 
 	int readerCount = 0, i =0, lastReaderCheck = 0;
 
@@ -51,109 +61,187 @@ void release(int *ldes)
 	/* If last reader or writer releases the lock, it can be acquired by reader/writer */
 	if(lptr->ltype==WRITE || lastReaderCheck )
 	{
-		/* add processes to ready Queue*/
-		
-		kprintf("\nWRiter realeased lock\n");
-		int highestWriter = -1;
-		int highestReader = -2;
-		int highestWriterPriority = 0;
-		int highestReaderPriority = 0;
-		prev = q[lptr->ltail].qprev;
-		//kprintf("\nlptr tail - %d\n", prev);
 
+		/* Print the Wait Queue*/
+		while(prev<NPROC)
+                {
+                	if(proctab[prev].locksState[lockdes] == READ){
+                        	kprintf("\nREAD=%d",q[prev].qkey);
+                        }
+                       	prev =  q[prev].qprev;
+                }
+		
+		kprintf("\nWriter realeased lock or Last Reader released lock\n");
+		prev = q[lptr->ltail].qprev;
+
+		int writerId, writerPriority, readerId, readerPriority;
+		 int writerId1, writerPriority1, readerId1, readerPriority1;	
+		/* Check if Wait Queue has some processes*/
 		if (prev < NPROC)
 		{
-
-			while(prev<NPROC)
-                        {
-                                if(proctab[prev].locksState[lockdes] == READ){
-                      			kprintf("\nREAD=%d",q[prev].qkey); 
-                                }
-                                prev =  q[prev].qprev;
-                        }
-			prev = q[lptr->ltail].qprev;
-			while(prev<NPROC)
+			/* if First process is a writer
+ 			* 1. Find the reader with highest priority, if not found - writer can acquire lock
+ 			* 2. Check if reader and writer have equal priority - If yes, give lock to all readers who have wait time difference less than 400 ms
+ 			* 3. If differnce is greater than 400, writer gets the lock
+ 			*/ 
+			if (proctab[prev].locksState[lockdes] == WRITE)
 			{
-				//kprintf("type: %d", proctab[prev].locksState[lockdes]);
-				if(proctab[prev].locksState[lockdes] == WRITE){
-					highestWriter = prev;
-					highestWriterPriority = q[prev].qkey;
-					break;
-				}
-				prev =  q[prev].qprev;
-			}
-			/* Find the reader with highest priority from lock queue */
-			prev = q[lptr->ltail].qprev;
-		 	while(prev<NPROC)
-                	{
-				if(proctab[prev].locksState[lockdes] == READ){
-                                	highestReader = prev;
-					highestReaderPriority = q[prev].qkey;
-					break;
-				}
-				prev =  q[prev].qprev;
-			}
+				writerId = prev;
+				writerPriority = q[prev].qkey;
 
-			prev = q[lptr->ltail].qprev;
-
+				readerId = -1;
+				readerPriority = 0;
 			
-			/* WRITER can acquire lock under 2 conditions:
- 			* 1. When reader and writer have equal priority and wait time is greater than 400
- 			* 2. When writer priority is greater than readre priority */
-			if(((highestReaderPriority == highestWriterPriority) && (&proctab[highestWriter].procwaittime  -  &proctab[highestReader].procwaittime >  400)) || (highestWriterPriority != 0 && highestWriterPriority > highestReaderPriority))
-                        {
-				lockAcquired(highestWriter, lockdes, WRITE);
-			}
-			/* READER can acuire can lock when both reader have same priority and the wait time differnce is less than 400ms */
-                        else if((highestReaderPriority == highestWriterPriority) && (&proctab[highestWriter].procwaittime  -  &proctab[highestReader].procwaittime  <= 400))
-                        {
-				while((highestReaderPriority == highestWriterPriority) && (&proctab[highestWriter].procwaittime  -  &proctab[highestReader].procwaittime  <= 400) && (prev < NPROC))
-                                {
-					lockAcquired(highestReader, lockdes, READ);
-					
-					prev =  q[prev].qprev;
-                                        if(proctab[prev].locksState[lockdes] == READ){
-                                                highestReader = prev;
-                                                highestReaderPriority = q[prev].qkey;
-                                        }
+				/* Find reader priority*/	
+				prev = q[prev].qprev;
+	                        while(prev<NPROC)
+        	                {
+                	                if(proctab[prev].locksState[lockdes] == READ){
+                        	                readerId = prev;
+                                	        readerPriority = q[prev].qkey;
+                                        	break;
+                                	}
+                               		 prev =  q[prev].qprev;
                         	}
-			}
-
-			/* READER can acquire lock when reader has higher priority than writer */
-			else if (highestReaderPriority != 0 && highestWriterPriority < highestReaderPriority) 
-			{
-				while(highestReaderPriority > highestWriterPriority && prev < NPROC)
+				/* Check case 2  */
+				if (readerId != -1)
 				{
-					kprintf("\nHIT THIS CASE----------------\n");
+					if((readerPriority == writerPriority) &&((&proctab[writerId].procwaittime  -  &proctab[readerId].procwaittime)  <= 400))
+					{
+						while((readerPriority == writerPriority) && (&proctab[writerId].procwaittime  -  &proctab[readerId].procwaittime  <= 400) && (prev < NPROC))
+                                		{
+                                        		lockAcquired(readerId, lockdes, READ);
 
-					kprintf("\nQueue Item =%d\n",highestReader);
-					lockAcquired(highestReader, lockdes, READ);
-
-					prev =  q[lptr->ltail].qprev;
-					kprintf("\nQueue Item2 =%d\n",q[prev].qkey);
-					if(proctab[prev].locksState[lockdes] == READ){
-						highestReader = prev;
-                                        	highestReaderPriority = q[prev].qkey;
+							prev = q[lptr->ltail].qprev;
+                                        		prev =  q[prev].qprev;
+                                        		if(proctab[prev].locksState[lockdes] == READ){
+                                      	        		readerId = prev;
+                                                		readerPriority = q[prev].qkey;
+                                        		}
+                                		}
 					}
+					/* case 3*/
+					else
+					{
+						lockAcquired(writerId, lockdes, WRITE);
+					}
+
 				}
-		
+				/* if no reader*/
+				else
+				{
+				/* writer gets it */
+					lockAcquired(writerId, lockdes, WRITE);
+				}
+
 			}
+
+			/* check if first process is reader, all readers who have riority greater than the highest priority writer will get the lock */
+			else if(proctab[prev].locksState[lockdes] == READ)
+			{
+				kprintf("\nHIT this case............\n");
+				/*
+				while(prev<NPROC)
+		                {
+                		        if(proctab[prev].locksState[lockdes] == READ){
+                                	kprintf("\nREAD=%d",q[prev].qkey);
+                        		}
+                        		prev =  q[prev].qprev;
+               			 }*/
+
+				readerId1 = prev;
+                                readerPriority1 = q[prev].qkey;
+
+                                writerId1 = -1;
+                                writerPriority1 = 0;
+
+                                /* Find writer priority*/
+                                prev = q[prev].qprev;
+                                while(prev<NPROC)
+                                {
+                                        if(proctab[prev].locksState[lockdes] == WRITE){
+                                                writerId1 = prev;
+                                                writerPriority1 = q[prev].qkey;
+                                                break;
+                                        }
+                                         prev =  q[prev].qprev;
+                                }
+                                /* Check case 2  */
+                                if (writerId1 != -1)
+                                {
+					kprintf("\nWRITER ID - CHECK 1\n");
+                                        if((readerPriority1 == writerPriority1) &&((&proctab[writerId1].procwaittime  -  &proctab[readerId1].procwaittime)  <= 400))
+                                        {
+                                                while((readerPriority1 == writerPriority1) && (&proctab[writerId1].procwaittime  -  &proctab[readerId1].procwaittime  <= 400) && (prev < NPROC))
+                                                {
+                                                        lockAcquired(readerId1, lockdes, READ);
+
+                                                        prev = q[lptr->ltail].qprev;
+                                                        prev =  q[prev].qprev;
+                                                        if(proctab[prev].locksState[lockdes] == READ){
+                                                                readerId1 = prev;
+                                                                readerPriority1 = q[prev].qkey;
+                                                        }
+                                                }
+                                        }
+                                        /* case 3*/
+                                        else
+                                        {
+                                                while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC)
+		                                {
+                		                        kprintf("\nHIT THIS CASE----------------\n");
+	
+        		                                kprintf("\nQueue Item =%d\n",q[prev].qkey);
+                        		                lockAcquired(prev, lockdes, READ);
+	
+        		                                prev =  q[lptr->ltail].qprev;
+                        		                kprintf("\nQueue Item2 =%d\n",q[prev].qkey);
+                                  		}
+
+                                        }
+
+                                }
+                                /* if no writer*/
+                                else
+                                {
+				//kprintf("\nWRITER ID - CHECK 2\n");
+                                /* reader gets it */
+					prev =  q[lptr->ltail].qprev;
+					while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC)
+                                        	{
+                                                        //kprintf("\nHIT THIS CASE----------------\n");
+
+                                                        kprintf("\nQueue Item =%d\n",q[prev].qkey);
+                                                        lockAcquired(prev, lockdes, READ);
+
+                                                        prev =  q[lptr->ltail].qprev;
+                                                        kprintf("\nQueue Item2 =%d\n",q[prev].qkey);
+                                                }
+                                }
+                          }
+
+	
 			resched();
 		}
-		/* If Wait Queue is empty, change state to free */
+		/* if there are no more items in the wait queue */
 		else
 		{
-		 	lptr->lstate = LFREE;
-			pptr->locksState[lockdes] = EMPTY;
+			lptr->lstate = LFREE;
+                        pptr->locksState[lockdes] = EMPTY;
 		}
 	}
-	else
-	{
-		proctab[currpid].locksState[lockdes] = EMPTY;
-		lptr->lstate = LUSED;
-		lptr->ltype = READ;
-	}
+	/* if there are more readeers using this lock */
+ 	else
+        {
+                proctab[currpid].locksState[lockdes] = EMPTY;
+                lptr->lstate = LUSED;
+                lptr->ltype = READ;
+        }
+ restore(ps);
+  return OK;
+
 }
+
 
 void lockAcquired(int highestWriterOrReader, int lockdes, int type)
 {
@@ -164,6 +252,7 @@ void lockAcquired(int highestWriterOrReader, int lockdes, int type)
         lptr->lstate = LUSED;
         lptr->ltype = type;
         lptr->lproc[pid] = LOCKACQ;
+	proctab[pid].lockid = NOTINWQ;
         proctab[pid].locksState[lockdes] = type;
         proctab[pid].procwaittime = 0;
         ready(pid, RESCHNO);
