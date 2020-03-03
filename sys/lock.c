@@ -11,6 +11,7 @@ extern unsigned long ctr1000;
 int lock (int ldes1, int type, int priority){
 	
 	STATWORD ps;
+	int i = 0;
 	struct  lockentry *lptr = &locktab[ldes1];
 	struct pentry *pptr = &proctab[currpid];
 	disable(ps);
@@ -51,6 +52,12 @@ int lock (int ldes1, int type, int priority){
 		//	updateMaxPrio(ldes1, pptr->pprio);
                         insert(currpid, lptr->lhead, priority);
 			lptr->lprio = findMaxPriority(ldes1);
+			
+			for (i=0; i<NLOCKS; i++)
+			{
+				if(lptr->lproc[i]==LOCKACQ)
+					updateMaxPrio(ldes1,i);
+			}
 			//updateMaxPrio(ldes1,priority, currpid);
                         resched();
                         restore(ps);
@@ -76,6 +83,11 @@ int lock (int ldes1, int type, int priority){
                        		pptr->procwaittime = ctr1000;
 			//	updateMaxPrio(ldes1, pptr->pprio);
                         	insert(currpid, lptr->lhead, priority);
+				for (i=0; i<NLOCKS; i++)
+                        	{
+					if(lptr->lproc[i]==LOCKACQ)
+                                	        updateMaxPrio(ldes1,i);
+                        	}
 			//	updateMaxPrio(ldes1, pptr->pprio, currpid);
 				lptr->lprio = findMaxPriority(ldes1);
                         	resched();
@@ -106,6 +118,11 @@ int lock (int ldes1, int type, int priority){
                         pptr->procwaittime = ctr1000;
 			//updateMaxPrio(ldes1, pptr->pprio);
                         insert(currpid, lptr->lhead, priority);
+			for (i=0; i<NLOCKS; i++)
+                        {
+				if(lptr->lproc[i]==LOCKACQ)
+                                	updateMaxPrio(ldes1,i);
+                        }
 			//updateMaxPrio(ldes1, pptr->pprio, currpid);
 			lptr->lprio = findMaxPriority(ldes1);
                         resched();

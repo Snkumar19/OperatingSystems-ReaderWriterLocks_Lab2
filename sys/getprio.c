@@ -20,5 +20,6 @@ SYSCALL getprio(int pid)
 		return(SYSERR);
 	}
 	restore(ps);
-	return(pptr->pprio);
+	kprintf("\n in get prio : %d", findPrio(pid));
+	return(findPrio(pid));
 }
