@@ -143,13 +143,13 @@ void test2 ()
 
 	struct  lockentry *lptr = &locktab[lck];
 	prev = q[lptr->ltail].qprev;
-	  while(prev<NPROC)
+	/*  while(prev<NPROC)
           {
                kprintf("\nQ: %d", q[prev].qkey);
 		kprintf("\nType: %d", lptr->lproc[q[prev].qkey]);
                 prev =  q[prev].qprev;
            }
-
+	*/
         sleep (15);
         kprintf("output=%s\n", output2);
         assert(mystrncmp(output2,"ABABCCDEED",10)==0,"Test 2 FAILED\n");

@@ -89,7 +89,7 @@ int lock (int ldes1, int type, int priority){
 			}
 			else
 			{
-				kprintf("\nThis case\n");
+				//kprintf("\nThis case\n");
 				lptr->lprio = priority;
         	                lptr->lproc[currpid] = LOCKACQ;
 

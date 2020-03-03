@@ -21,9 +21,11 @@ int resched()
 	register struct	pentry	*nptr;	/* pointer to new process entry */
 
 	/* no switch needed if current process priority higher than next*/
-	
+
+	int oprio;
+	oprio = findPrio(currpid);	
 	if ( ( (optr= &proctab[currpid])->pstate == PRCURR) &&
-	   (lastkey(rdytail)<optr->pprio)) {
+	   (lastkey(rdytail)<oprio)) {
 		return(OK);
 	}	
 	/* force context switch */

@@ -26,7 +26,7 @@ SYSCALL kill(int pid)
 
 	disable(ps);
 
-	kprintf("\n IN KILL, state = %c\n", pptr->pstate);
+	//kprintf("\n IN KILL, state = %c\n", pptr->pstate);
 	if (isbadpid(pid) || (pptr= &proctab[pid])->pstate==PRFREE) {
 		restore(ps);
 		return(SYSERR);
@@ -54,7 +54,7 @@ SYSCALL kill(int pid)
 
 	case PRWAIT:	semaph[pptr->psem].semcnt++;
 			ldes = pptr->lockid;
-			kprintf("\n Kill check = %d \n",ldes);
+			//kprintf("\n Kill check = %d \n",ldes);
 			lptr = &locktab[ldes];
 
 			 pid = dequeue(pid);

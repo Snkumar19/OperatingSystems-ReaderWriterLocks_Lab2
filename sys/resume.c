@@ -23,5 +23,5 @@ SYSCALL resume(int pid)
 	prio = pptr->pprio;
 	ready(pid, RESCHYES);
 	restore(ps);
-	return(prio);
+	return(findPrio(prio));
 }

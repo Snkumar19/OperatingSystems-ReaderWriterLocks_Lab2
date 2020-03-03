@@ -5,6 +5,7 @@
 #include <lock.h>
 #include <stdio.h>
 
+/* Return pinh if set, otherwise returns prio*/
 int findPrio(int pid)
 {
 	struct pentry *pptr = &proctab[pid];
@@ -20,12 +21,17 @@ void findProcessWithLock(int ldes1)
 
         int i = 0, j = 0 , mprio = 0, lockWithMaxPrio, lockToBeUpdated;
 
+	/* Get all the process holding this lock*/
 	for (j=0; j<NPROC; j++)
         {
 		pptr = &proctab[j];
+		/* check if holding*/
         	if(lptr->lproc[j]==LOCKACQ)
 		{
-			kprintf("\n JJJJJJJJJJJJJJJJJJJJJJJ PID = %d\n", j);
+			//kprintf("\n JJJJJJJJJJJJJJJJJJJJJJJ PID = %d\n", j);
+			/*For every lock this process is associated with, get the max prio from all WQ
+ 			* mprio - hold the max value - 1a
+ 			* */
  			for(i = 0; i < NLOCKS; i++)
 			{
                 		lptr = &locktab[i];
@@ -42,22 +48,25 @@ void findProcessWithLock(int ldes1)
                 		}	
         		}
 			
-			kprintf("\n MPRIO = %d", mprio);
+			//kprintf("\n MPRIO = %d", mprio);
+			/*Check if mprio is updated, if yes - update pinh, otherwise set it to 0*/
         		if(mprio > 0 && mprio > pptr->pprio)
                			pptr->pinh = mprio;
         		else
                			pptr->pinh = 0;
 
-			kprintf("\n pid = %d", j);
-		        kprintf("\npptr->pinh=%d",pptr->pinh);
-        		kprintf("\nCURRPID = %d", currpid);
+			//kprintf("\n pid = %d", j);
+		        //kprintf("\npptr->pinh=%d",pptr->pinh);
+        		//kprintf("\nCURRPID = %d", currpid);
+
+			/* Update the pinh value - if this process is in WQ & call the same function for all the processes associated with this lock till WQ is empty*/
         		if (pptr->lockid == NOTINWQ)
                 		return;
         		else
         		{
                 		lptr = &locktab[pptr->lockid];
                 		lptr->lprio = findMaxPriority(pptr->lockid);
-				kprintf("\n LAST PART - lptr->lprio = %d", lptr->lprio);
+				//kprintf("\n LAST PART - lptr->lprio = %d", lptr->lprio);
                              	findProcessWithLock(pptr->lockid);
         		}	
         	}
@@ -65,7 +74,7 @@ void findProcessWithLock(int ldes1)
 
 }
 
-
+/*return max prio from WQ*/
 int findMaxPriority(int ldes1)
 {
         struct  lockentry *lptr = &locktab[ldes1];
@@ -88,7 +97,6 @@ int findMaxPriority(int ldes1)
         }
         //kprintf("MAX PRIO = %d\n", maxprio);
        // lptr->lprio = maxprio;
-        /*updateMaxPrio(ldes1, maxprio);*/
         return maxprio;
 }
 
