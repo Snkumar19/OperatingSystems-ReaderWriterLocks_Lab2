@@ -62,14 +62,15 @@ SYSCALL kill(int pid)
         		proctab[pid].lockid = NOTINWQ;
        			 proctab[pid].locksState[ldes] = DELETED;
 		        proctab[pid].procwaittime = 0;
-			for (i=0; i<NPROC; i++)
+			findProcessWithLock(ldes);
+			/*for (i=0; i<NPROC; i++)
                         {
 				//kprintf("\nProcess with this lock = %d- %d\n",i, lptr->lproc[i]);
                                 if(lptr->lproc[i]==LOCKACQ){
 					kprintf("\nProcess holding this lock = %d\n",i);
                                         updateMaxPrio(ldes,i);
 				}
-                        }
+                        }*/
 
 
 	case PRREADY:	dequeue(pid);

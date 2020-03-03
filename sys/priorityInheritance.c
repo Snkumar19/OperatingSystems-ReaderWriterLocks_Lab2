@@ -13,6 +13,50 @@ int findPrio(int pid)
 	return pptr->pprio;
 }
 
+void findProcessWithLock(int ldes1)
+{
+	struct lockentry *lptr = &locktab[ldes1];
+	struct pentry *pptr;
+
+        int i = 0, j = 0 , mprio = 0, lockWithMaxPrio, lockToBeUpdated;
+
+	for (j=0; j<NLOCKS; j++)
+        {
+		pptr = &proctab[j];
+        	if(lptr->lproc[j]==LOCKACQ)
+		{
+ 			for(i = 0; i < NLOCKS; i++)
+			{
+                		lptr = &locktab[i];
+                		lptr->lprio = findMaxPriority(i);
+                		if((pptr->locksState[i] == READ || pptr->locksState[i] == WRITE) && (locktab[i].lstate == LUSED))
+                		{
+                        		if (lptr->lprio > mprio)
+					{
+                                		mprio = lptr->lprio;
+                                		lockWithMaxPrio = i;
+                        		}
+                		}	
+        		}
+
+        		if(mprio > 0 && mprio > pptr->pprio)
+               			pptr->pinh = mprio;
+        		else
+               			pptr->pinh = 0;
+
+        		if (pptr->lockid == NOTINWQ)
+                		return;
+        		else
+        		{
+                		lptr = &locktab[pptr->lockid];
+                		lptr->lprio = findMaxPriority(pptr->lockid);
+                             	findProcessWithLock(pptr->lockid);
+        		}	
+        	}
+	}
+
+}
+
 
 int findMaxPriority(int ldes1)
 {

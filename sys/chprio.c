@@ -21,6 +21,17 @@ SYSCALL chprio(int pid, int newprio)
 		restore(ps);
 		return(SYSERR);
 	}
+
+/*
+	if (pptr->pinh!=0 && newprio > pptr->pinh)
+	{
+		pptr->pprio = newprio;
+		pptr->pinh = newprio;
+	}
+	else
+		pptr->pprio = newprio;
+*/
+
 	pptr->pprio = newprio;
 	restore(ps);
 	return(newprio);

@@ -30,6 +30,7 @@ int lock (int ldes1, int type, int priority);
 int findMaxPriority(int ldes1);
 int updateMaxPrio(int ldes1, int currpid);
 int findPrio(int pid);
+void findProcessWithLock(int ldes1);
 
 #define isbadlock(s)     (s<0 || s>=NLOCKS)
 struct lockentry{
