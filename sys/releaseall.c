@@ -123,10 +123,16 @@ kprintf("\na = %d\n", lockdes);
 
 							prev = q[lptr->ltail].qprev;
                                         		prev =  q[prev].qprev;
-                                        		if(proctab[prev].locksState[lockdes] == READ){
-                                      	        		readerId = prev;
-                                                		readerPriority = q[prev].qkey;
-                                        		}
+							while(prev<NPROC)
+			                                {
+                        		                	if(proctab[prev].locksState[lockdes] == READ){
+                                        		        	readerId = prev;
+                                                			readerPriority = q[prev].qkey;
+                                               				 break;
+                                        			}
+                                         			prev =  q[prev].qprev;
+                                			}
+
                                 		}
 					}
 					/* case 3*/
@@ -185,17 +191,22 @@ kprintf("\na = %d\n", lockdes);
                                                         lockAcquired(readerId1, lockdes, READ);
 
                                                         prev = q[lptr->ltail].qprev;
-                                                        prev =  q[prev].qprev;
-                                                        if(proctab[prev].locksState[lockdes] == READ){
-                                                                readerId1 = prev;
-                                                                readerPriority1 = q[prev].qkey;
+							while(prev<NPROC)
+                                                        {
+                                                                if(proctab[prev].locksState[lockdes] == READ){
+                                                                        readerId = prev;
+                                                                        readerPriority = q[prev].qkey;
+                                                                         break;
+                                                                }
+                                                                prev =  q[prev].qprev;
                                                         }
+
                                                 }
                                         }
                                         /* case 3*/
                                         else
                                         {
-                                                while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC)
+                                                while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC && q[prev].qkey > writerPriority1)
 		                                {
                 		                        kprintf("\nHIT THIS CASE----------------\n");
 	
@@ -245,8 +256,8 @@ kprintf("\na = %d\n", lockdes);
                 lptr->lstate = LUSED;
                 lptr->ltype = READ;
         }
- restore(ps);
-  return OK;
+  	restore(ps);
+  	return OK;
 
 }
 

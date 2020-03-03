@@ -8,6 +8,8 @@
 extern struct  lockentry locktab[NLOCKS];
 extern unsigned long ctr1000;
 
+void waitForLock(int currpid, int ldes1, int type, int priority);
+
 int lock (int ldes1, int type, int priority){
 	
 	STATWORD ps;
@@ -45,7 +47,8 @@ int lock (int ldes1, int type, int priority){
 	if (locktab[ldes1].lstate == LUSED &&  lptr->ltype == WRITE)
 	{
 		// 	SINCE Writers need exclusive locks, put them to WAIT
-			pptr->pstate=PRWAIT;
+			waitForLock(currpid,ldes1,type, priority);
+		/*	pptr->pstate=PRWAIT;
 			pptr->lockid = ldes1;
                         pptr->locksState[ldes1] = type;
                         pptr->procwaittime = ctr1000;
@@ -53,7 +56,7 @@ int lock (int ldes1, int type, int priority){
                         insert(currpid, lptr->lhead, priority);
 			lptr->lprio = findMaxPriority(ldes1);
 			findProcessWithLock(ldes1);		
-			//updateMaxPrio(ldes1,priority, currpid);
+			//updateMaxPrio(ldes1,priority, currpid); */
                         resched();
                         restore(ps);
                         return(OK);
@@ -71,16 +74,15 @@ int lock (int ldes1, int type, int priority){
 		if(type==READ)
 		{
 			if(findHigherPriorityWriter(priority,ldes1))
-			{
-				pptr->pstate=PRWAIT;
+			{	
+				waitForLock(currpid,ldes1,type,priority);
+				/*pptr->pstate=PRWAIT;
 				pptr->lockid = ldes1;
                        		pptr->locksState[ldes1] = type;
                        		pptr->procwaittime = ctr1000;
-			//	updateMaxPrio(ldes1, pptr->pprio);
                         	insert(currpid, lptr->lhead, priority);
 				findProcessWithLock(ldes1);
-			//	updateMaxPrio(ldes1, pptr->pprio, currpid);
-				lptr->lprio = findMaxPriority(ldes1);
+				lptr->lprio = findMaxPriority(ldes1);*/
                         	resched();
                        		restore(ps);
                         	return(OK);
@@ -103,7 +105,8 @@ int lock (int ldes1, int type, int priority){
                	  */
 		else if(type==WRITE)
 		{
-			pptr->pstate=PRWAIT;
+			waitForLock(currpid,ldes1,type,priority);
+			/*pptr->pstate=PRWAIT;
 			pptr->lockid = ldes1;
                         pptr->locksState[ldes1] = type;
                         pptr->procwaittime = ctr1000;
@@ -111,7 +114,7 @@ int lock (int ldes1, int type, int priority){
                         insert(currpid, lptr->lhead, priority);
 			findProcessWithLock(ldes1);
 			//updateMaxPrio(ldes1, pptr->pprio, currpid);
-			lptr->lprio = findMaxPriority(ldes1);
+			lptr->lprio = findMaxPriority(ldes1);*/
                         resched();
                         restore(ps);
                         return(OK);
@@ -140,6 +143,19 @@ int findHigherPriorityWriter(int priority, int ldes1)
 	return 0;
 }
 
+void waitForLock(int currpid, int ldes1, int type, int priority)
+{
+         struct  lockentry *lptr = &locktab[ldes1];
+         struct pentry *pptr = &proctab[currpid];
+	 pptr->pstate=PRWAIT;
+         pptr->lockid = ldes1;
+         pptr->locksState[ldes1] = type;
+         pptr->procwaittime = ctr1000;
+         insert(currpid, lptr->lhead, priority);
+         findProcessWithLock(ldes1);
+         lptr->lprio = findMaxPriority(ldes1);
+
+}
 /*
 int findLockOwner(ldes1)
 {
