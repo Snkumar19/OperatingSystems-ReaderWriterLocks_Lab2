@@ -448,9 +448,12 @@ lock-copy1.o: ../sys/lock-copy1.c /usr/include/stdc-predef.h ../h/conf.h \
 lock-copy.o: ../sys/lock-copy.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/q.h \
  ../h/lock.h ../h/stdio.h
+main123.o: ../sys/main123.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/lock.h \
+ ../h/stdio.h
 main.o: ../sys/main.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/lock.h \
- ../h/q.h ../h/stdio.h
+ ../h/stdio.h
 main-copy.o: ../sys/main-copy.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/lock.h \
  ../h/q.h ../h/stdio.h
@@ -465,6 +468,9 @@ newqueue.o: ../sys/newqueue.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/q.h
 open.o: ../sys/open.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/io.h
+org-main.o: ../sys/org-main.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/lock.h \
+ ../h/q.h ../h/stdio.h
 panic.o: ../sys/panic.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/stdio.h
 pci.o: ../sys/pci.c /usr/include/stdc-predef.h ../h/conf.h ../h/kernel.h \

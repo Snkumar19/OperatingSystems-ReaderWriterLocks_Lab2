@@ -572,10 +572,10 @@ void test9() {
 			"\nTest 9:\nexpected output:\nreader A: acquired lock, sleep 3s\nwriter C: lock was DELETED\nreader B: lock returned SYSERR\nreader D: acquired lock, sleep 3s\n");
 
 	kprintf("\nReal Output:\n"); 
-	/* Create original lock*/
- 	lastlck = lcreate();
- 
-  		/* Create processes that use original lock */
+	/* Create original lock
+ * 	lastlck = lcreate();
+ *
+ * 		/* Create processes that use original lock */
 	rd1 = create(reader, 2000, 20, "reader", 3, "reader A", lastlck, 20);
 	rd2 = create(reader, 2000, 20, "reader", 3, "reader B", lastlck, 20);
 	wr1 = create(writer, 2000, 20, "writer", 3, "writer C", lastlck, 30);
@@ -624,9 +624,9 @@ int main() {
 	test4();*/
 	//test5();
 	//test6();
-	//test7();
-	//test8();
-	test9();
+	test7();
+	/*test8();
+	test9();*/
 
 	return 0;
 }

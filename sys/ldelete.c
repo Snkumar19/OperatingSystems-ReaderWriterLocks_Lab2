@@ -18,6 +18,8 @@ int ldelete (int lockdescriptor)
 		return(SYSERR);
 	}
 
+	//kprintf("\n In ldelete\n");
+
 	lptr = &locktab[lockdescriptor];
 	lptr->lstate = LFREE;
 	lptr->ltype = EMPTY;
@@ -28,6 +30,7 @@ int ldelete (int lockdescriptor)
 	if (nonempty(lptr->lhead)) {
 		while( (pid=getfirst(lptr->lhead)) != EMPTY)
 		  {
+			//kprintf("\n Delete - wq\n");
 			proctab[pid].locksState[lockdescriptor] = DELETED;
 			proctab[pid].lockid = NOTINWQ;
 		    	proctab[pid].pwaitret = DELETED;

@@ -18,7 +18,10 @@ int lock (int ldes1, int type, int priority){
 	struct pentry *pptr = &proctab[currpid];
 	disable(ps);
 
-	 if (isbadlock(ldes1) || pptr->locksState[ldes1] == DELETED) {
+	
+//	kprintf("\n LOCK CHECK\n");
+	if (isbadlock(ldes1) || pptr->locksState[ldes1] == DELETED) {
+		//kprintf("\nDELETED...\n");
                 restore(ps);
                 return(SYSERR);
         }
@@ -30,7 +33,8 @@ int lock (int ldes1, int type, int priority){
 //		ownerofLock = currpid; 
 	
 	if (locktab[ldes1].lstate == LCREATE || locktab[ldes1].lstate == LFREE)
-	{
+	{	
+		//kprintf("\n1 . %d =", OK);
 		pptr->lockid = NOTINWQ;
 		lptr->lstate = LUSED;
 		lptr->ltype = type;
@@ -46,8 +50,10 @@ int lock (int ldes1, int type, int priority){
 	/* Control Comes here only if the State is not Free */
 	if (locktab[ldes1].lstate == LUSED &&  lptr->ltype == WRITE)
 	{
+			//kprintf("\n2 . %d =", pptr->pwaitret);
 		// 	SINCE Writers need exclusive locks, put them to WAIT
 			waitForLock(currpid,ldes1,type, priority);
+			//kprintf ("WRITE - Print from Type Read when LUSED : %d, %d ", currpid, type);
 		/*	pptr->pstate=PRWAIT;
 			pptr->lockid = ldes1;
                         pptr->locksState[ldes1] = type;
@@ -59,7 +65,7 @@ int lock (int ldes1, int type, int priority){
 			//updateMaxPrio(ldes1,priority, currpid); */
                         resched();
                         restore(ps);
-                        return(OK);
+                        return(pptr->pwaitret);
 	}
 
 	if (locktab[ldes1].lstate == LUSED &&  lptr->ltype == READ){
@@ -75,7 +81,9 @@ int lock (int ldes1, int type, int priority){
 		{
 			if(findHigherPriorityWriter(priority,ldes1))
 			{	
+				//kprintf("\n3 . %d =", pptr->pwaitret);
 				waitForLock(currpid,ldes1,type,priority);
+				//kprintf ("READ... - Print from Type Read when LUSED : %d, %d ", currpid, type);
 				/*pptr->pstate=PRWAIT;
 				pptr->lockid = ldes1;
                        		pptr->locksState[ldes1] = type;
@@ -85,16 +93,17 @@ int lock (int ldes1, int type, int priority){
 				lptr->lprio = findMaxPriority(ldes1);*/
                         	resched();
                        		restore(ps);
-                        	return(OK);
+                        	return(pptr->pwaitret);
 			}
 			else
 			{
+				//kprintf("\n4 . %d =", OK);
 				//kprintf("\nThis case\n");
 				lptr->lprio = priority;
         	                lptr->lproc[currpid] = LOCKACQ;
 
 	                        pptr->locksState[ldes1] = type;
-
+				//kprintf ("Print from Type Read when LUSED : %d, %d ", currpid, type);
                                 restore(ps);
                                 return(OK);
                         
@@ -105,6 +114,7 @@ int lock (int ldes1, int type, int priority){
                	  */
 		else if(type==WRITE)
 		{
+			//kprintf("\n5 . %d =", pptr->pwaitret);
 			waitForLock(currpid,ldes1,type,priority);
 			/*pptr->pstate=PRWAIT;
 			pptr->lockid = ldes1;
@@ -117,7 +127,7 @@ int lock (int ldes1, int type, int priority){
 			lptr->lprio = findMaxPriority(ldes1);*/
                         resched();
                         restore(ps);
-                        return(OK);
+                        return(pptr->pwaitret);
 
 		}
 	}
@@ -152,6 +162,7 @@ void waitForLock(int currpid, int ldes1, int type, int priority)
          pptr->locksState[ldes1] = type;
          pptr->procwaittime = ctr1000;
          insert(currpid, lptr->lhead, priority);
+	 pptr->pwaitret = OK;
          findProcessWithLock(ldes1);
          lptr->lprio = findMaxPriority(ldes1);
 

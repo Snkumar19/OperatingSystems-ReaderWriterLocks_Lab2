@@ -12,37 +12,47 @@ int releaseall (int numlocks, int args)
         disable(ps);
 
 	 int i = 0;
+	int releaseCheck = 0;
+	int check = 0; 
 	//kprintf("\nIn releaseAll\n");
 
 	int *a;	
-	a = &args;
 
 	a = &args;
 	for ( i = 0 ; i < numlocks ; i++){	/* machine dependent; copy args	*/
 		//kprintf("\nAAAAAAAAAA = %d\n", *a);
-		release(a);
+		releaseCheck = release(a);
+		//kprintf("release a- = %d", release(a));
+		if(releaseCheck==SYSERR)
+			check = 1;
+			//kprintf("check - %d", check);
+		
 		//kprintf("\nAAAAAAAAAA - after releasing = %d\n", *a);
 		a = a + 1;
 	}
-
-               
-
+	/* one lock returns SYSERR, return SYSERR*/		
+	if(check){
+		restore(ps);
+		return SYSERR;
+	}
 	restore(ps);
 	return OK;
 }
 
-void release(int *ldes)
+int release(int *ldes)
 {
-	 STATWORD ps;
-        disable(ps);
+	 //STATWORD ps;
+        //disable(ps);
 	struct pentry *pptr = &proctab[currpid];
 	int lockdes = *ldes;
 	int prev,pid;
 	struct  lockentry *lptr = &locktab[lockdes];
 
+
 	 if (isbadlock(lockdes) || pptr->locksState[lockdes] == DELETED || pptr->locksState[lockdes] == EMPTY || lptr->lstate == LFREE) {
-		//kprintf("\nRELEASE ERROR = %d\n", lockdes);
-                restore(ps);
+		//kprintf("\nRELEASE ERROR = %d, %d\n", lockdes,currpid);
+	//	kprintf("\n%d,%d,%d\n",isbadlock(lockdes),pptr->locksState[lockdes],lptr->lstate);
+          //      restore(ps);
                 return(SYSERR);
         
 	}
@@ -183,7 +193,21 @@ void release(int *ldes)
                                 if (writerId1 != -1)
                                 {
 					//kprintf("\nWRITER ID - CHECK 1\n");
-                                        if((readerPriority1 == writerPriority1) &&((&proctab[writerId1].procwaittime  -  &proctab[readerId1].procwaittime)  <= 400))
+					if(readerPriority1 > writerPriority1)
+                                        {
+                                                while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC && q[prev].qkey > writerPriority1)
+                                                {
+                                                       
+                                                        lockAcquired(prev, lockdes, READ);
+                                                        prev =  q[lptr->ltail].qprev;
+                                                        
+                                                }
+
+                                        }
+					readerId1 = prev;
+                                	readerPriority1 = q[prev].qkey;
+                                        
+					if((readerPriority1 == writerPriority1) &&((&proctab[writerId1].procwaittime  -  &proctab[readerId1].procwaittime)  <= 400))
                                         {
                                                 while((readerPriority1 == writerPriority1) && (&proctab[writerId1].procwaittime  -  &proctab[readerId1].procwaittime  <= 400) && (prev < NPROC))
                                                 {
@@ -202,22 +226,6 @@ void release(int *ldes)
 
                                                 }
                                         }
-                                        /* case 3*/
-                                        else
-                                        {
-                                                while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC && q[prev].qkey > writerPriority1)
-		                                {
-                		                       // kprintf("\nHIT THIS CASE----------------\n");
-	
-        		                                //kprintf("\nQueue Item =%d\n",q[prev].qkey);
-                        		                lockAcquired(prev, lockdes, READ);
-	
-        		                                prev =  q[lptr->ltail].qprev;
-                        		                //kprintf("\nQueue Item2 =%d\n",q[prev].qkey);
-                                  		}
-
-                                        }
-
                                 }
                                 /* if no writer*/
                                 else
@@ -227,7 +235,7 @@ void release(int *ldes)
 					prev =  q[lptr->ltail].qprev;
 					while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC)
                                         	{
-                                                       	//kprintf("\nHIT THIS CASE----------------\n");
+                                                       //	kprintf("\nHIT THIS CASE----------------=%d\n",currpid);
 
                                                         //kprintf("\nQueue Item =%d\n",q[prev].qkey);
                                                         lockAcquired(prev, lockdes, READ);
@@ -255,7 +263,7 @@ void release(int *ldes)
                 lptr->lstate = LUSED;
                 lptr->ltype = READ;
         }
-  	restore(ps);
+  	//restore(ps);
   	return OK;
 
 }
