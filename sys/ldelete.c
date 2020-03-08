@@ -8,7 +8,7 @@
 int ldelete (int lockdescriptor)
 {
 	STATWORD ps;    
-	int	pid;
+	int	pid, i;
 	struct	lockentry *lptr;
 	struct  pentry *pptr;
 	
@@ -26,7 +26,16 @@ int ldelete (int lockdescriptor)
 	lptr->lprio = -1;
 	lptr->lproc[currpid] = LOCKNOTACQ;
 
-	
+	for(i=0;i<NPROC;i++)
+	{
+		pptr = &proctab[i];
+		if(pptr->pstate != PRFREE && lptr->deleteTracker[i] != BEFORELCREATE)
+		{	
+			lptr->deleteTracker[i] = LNOTAVAILABLE;
+			//kprintf("\nDelete check = %d, %d\n",i, lptr->deleteTracker[i] );
+		}
+	}	
+
 	if (nonempty(lptr->lhead)) {
 		while( (pid=getfirst(lptr->lhead)) != EMPTY)
 		  {

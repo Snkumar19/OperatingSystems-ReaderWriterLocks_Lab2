@@ -20,9 +20,12 @@ int lock (int ldes1, int type, int priority){
 
 	
 //	kprintf("\n LOCK CHECK\n");
-	if (isbadlock(ldes1) || pptr->locksState[ldes1] == DELETED) {
-		//kprintf("\nDELETED...\n");
-                restore(ps);
+	if (isbadlock(ldes1) || pptr->locksState[ldes1] == DELETED || lptr->deleteTracker[currpid] == LNOTAVAILABLE) {
+		/*
+		if (lptr->deleteTracker[currpid] == LNOTAVAILABLE)
+			kprintf("\nDELETED...\n");
+                */
+		restore(ps);
                 return(SYSERR);
         }
 

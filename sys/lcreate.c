@@ -6,12 +6,13 @@
 #include <lock.h>
 
 LOCAL int newlock();
-
+int print = -1;
 int lcreate()
 {
 	STATWORD ps;    
 	int ldesc;
 	struct lockentry *lptr;
+	struct pentry *pptr;
         	
 	extern struct  lockentry locktab[NLOCKS];
 	disable(ps);
@@ -23,6 +24,25 @@ int lcreate()
 //	locktab[ldesc].lcount = 1; /* initialize lock count to 1 when created */
         
 
+	lptr = &locktab[ldesc];
+	int i = 0;
+	if (print == 0 || print >= 50)
+	kprintf ("\n---------------");
+
+	for (i = 0; i < NPROC; i++)
+	{
+		pptr = &proctab[i];
+                if(pptr->pstate != PRFREE && lptr->deleteTracker[i] != LNOTAVAILABLE )
+                {
+			if (print == 0 || print >= 50)
+				kprintf("\n LCREATE - i  = %d\n", i);
+                        lptr->deleteTracker[i] = BEFORELCREATE;
+		}
+
+	}
+	if (print == 0 || print >= 50)
+		kprintf ("---------------\n");	
+	//print +=1;
 	restore(ps);
 	return(ldesc);
 }

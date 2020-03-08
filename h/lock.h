@@ -23,12 +23,16 @@
 
 #define NOTINWQ  -1
 
+#define LAVAILABLE 110
+#define LNOTAVAILABLE 111
+#define BEFORELCREATE 112
+
 void linit();
 int lcreate ();
 int ldelete (int lockdescriptor);
 int lock (int ldes1, int type, int priority); 
 int findMaxPriority(int ldes1);
-int updateMaxPrio(int ldes1, int currpid);
+//int updateMaxPrio(int ldes1, int currpid);
 int findPrio(int pid);
 void findProcessWithLock(int ldes1);
 void waitForLock(int currpid, int ldes1, int type, int priority);
@@ -41,13 +45,12 @@ struct lockentry{
 	int lprio;
 	int lhead;
 	int ltail;
-	//int lcount;
 	int lproc[NPROC];
+	int deleteTracker[NPROC];
 	//int lwaittime[NPROC];
 };
 
 extern struct	lockentry locktab[];
 extern	int	nextlock;
-extern  int     nr;
 
 #endif

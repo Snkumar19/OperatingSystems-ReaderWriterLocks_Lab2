@@ -195,7 +195,7 @@ int release(int *ldes)
 					//kprintf("\nWRITER ID - CHECK 1\n");
 					if(readerPriority1 > writerPriority1)
                                         {
-                                                while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC && q[prev].qkey > writerPriority1)
+                                                while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC && q[prev].qkey >= writerPriority1)
                                                 {
                                                        
                                                         lockAcquired(prev, lockdes, READ);
@@ -203,9 +203,21 @@ int release(int *ldes)
                                                         
                                                 }
 
+
+						prev = q[lptr->ltail].qprev;
+        	                                while(prev<NPROC)
+                	                        {
+                        	                        if(proctab[prev].locksState[lockdes] == READ){
+                                	                        readerId = prev;
+                                        	                readerPriority = q[prev].qkey;
+                                                	        break;
+                                                	}
+                                                	prev =  q[prev].qprev;
+                                        	}
+
+
                                         }
-					readerId1 = prev;
-                                	readerPriority1 = q[prev].qkey;
+
                                         
 					if((readerPriority1 == writerPriority1) &&((&proctab[writerId1].procwaittime  -  &proctab[readerId1].procwaittime)  <= 400))
                                         {

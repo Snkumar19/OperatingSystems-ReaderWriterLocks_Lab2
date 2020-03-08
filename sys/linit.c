@@ -6,7 +6,6 @@
 #include <stdio.h>
 
 struct  lockentry locktab[NLOCKS];
-int nr = 0;
 void linit()
 {
 	struct	lockentry *lptr;
@@ -25,9 +24,10 @@ void linit()
 			
 		  /* initialize priority */
        		lptr->lprio = 0;
-	
+			
 	 	for (j = 0 ; j<NPROC ; j++) {
 			lptr->lproc[j] = LOCKNOTACQ;
+			lptr->deleteTracker[j] = LAVAILABLE;
 		}
 	}
 	kprintf("\nAfter Initializing");
