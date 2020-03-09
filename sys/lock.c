@@ -53,7 +53,7 @@ int lock (int ldes1, int type, int priority){
 	/* Control Comes here only if the State is not Free */
 	if (locktab[ldes1].lstate == LUSED &&  lptr->ltype == WRITE)
 	{
-			//kprintf("\n2 . %d =", pptr->pwaitret);
+		//	kprintf("\n2 . %d =", pptr->pwaitret);
 		// 	SINCE Writers need exclusive locks, put them to WAIT
 			waitForLock(currpid,ldes1,type, priority);
 			//kprintf ("WRITE - Print from Type Read when LUSED : %d, %d ", currpid, type);

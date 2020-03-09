@@ -14,7 +14,6 @@ int releaseall (int numlocks, int args)
 	 int i = 0;
 	int releaseCheck = 0;
 	int check = 0; 
-	//kprintf("\nIn releaseAll\n");
 
 	int *a;	
 
@@ -57,6 +56,7 @@ int release(int *ldes)
         
 	}
 	
+	//kprintf("\nIn release function with LockDes = %d for Proc %d with Prio %d\n", lockdes , currpid, findPrio(currpid));
 	//kprintf("\na = %d\n", lockdes);
 	int readerCount = 0, i =0, lastReaderCheck = 0;
 
