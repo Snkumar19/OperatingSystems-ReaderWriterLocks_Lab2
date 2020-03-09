@@ -49,9 +49,9 @@ int release(int *ldes)
 
 
 	 if (isbadlock(lockdes) || pptr->locksState[lockdes] == DELETED || pptr->locksState[lockdes] == EMPTY || lptr->lstate == LFREE) {
-		//kprintf("\nRELEASE ERROR = %d, %d\n", lockdes,currpid);
-	//	kprintf("\n%d,%d,%d\n",isbadlock(lockdes),pptr->locksState[lockdes],lptr->lstate);
-          //      restore(ps);
+		// 	kprintf("\nRELEASE ERROR = %d, %d\n", lockdes,currpid);
+		//	kprintf("\n%d,%d,%d\n",isbadlock(lockdes),pptr->locksState[lockdes],lptr->lstate);
+          	//      restore(ps);
                 return(SYSERR);
         
 	}
@@ -74,7 +74,7 @@ int release(int *ldes)
 
 	lptr->lproc[currpid] = LOCKNOTACQ;
 	pptr->locksState[lockdes] = EMPTY;
-//	kprintf("\nreaderCount = %d", readerCount);
+	//	kprintf("\nreaderCount = %d", readerCount);
 
 	/* If last reader or writer releases the lock, it can be acquired by reader/writer */
 	if(lptr->ltype==WRITE || lastReaderCheck )
@@ -93,7 +93,7 @@ int release(int *ldes)
 		prev = q[lptr->ltail].qprev;
 
 		int writerId, writerPriority, readerId, readerPriority;
-		 int writerId1, writerPriority1, readerId1, readerPriority1;	
+		int writerId1, writerPriority1, readerId1, readerPriority1;	
 		/* Check if Wait Queue has some processes*/
 		if (prev < NPROC)
 		{
@@ -104,6 +104,7 @@ int release(int *ldes)
  			*/ 
 			if (proctab[prev].locksState[lockdes] == WRITE)
 			{
+				//kprintf (" \n Release All - Print 1 / 10");
 				writerId = prev;
 				writerPriority = q[prev].qkey;
 
@@ -126,6 +127,7 @@ int release(int *ldes)
 				{
 					if((readerPriority == writerPriority) &&((&proctab[writerId].procwaittime  -  &proctab[readerId].procwaittime)  <= 400))
 					{
+						//kprintf (" \n Release All - Print 2 / 10");
 						while((readerPriority == writerPriority) && (&proctab[writerId].procwaittime  -  &proctab[readerId].procwaittime  <= 400) && (prev < NPROC))
                                 		{
                                         		lockAcquired(readerId, lockdes, READ);
@@ -147,6 +149,7 @@ int release(int *ldes)
 					/* case 3*/
 					else
 					{
+						//kprintf (" \n Release All - Print 3 / 10");
 						lockAcquired(writerId, lockdes, WRITE);
 					}
 
@@ -155,6 +158,7 @@ int release(int *ldes)
 				else
 				{
 				/* writer gets it */
+					//kprintf (" \n Release All - Print 4 / 10");
 					lockAcquired(writerId, lockdes, WRITE);
 				}
 
@@ -171,7 +175,7 @@ int release(int *ldes)
 				*kprintf("\nREAD=%d",q[prev].qkey);
 				*} 						                                		                						                                		                                        	                        		                        		prev =  q[prev].qprev;
  				* 						                                		                                        	                        		                        		               			 }*/
-
+				//kprintf (" \n Release All - Print 5 / 10");
 				readerId1 = prev;
                                 readerPriority1 = q[prev].qkey;
 
@@ -195,9 +199,11 @@ int release(int *ldes)
 					//kprintf("\nWRITER ID - CHECK 1\n");
 					if(readerPriority1 > writerPriority1)
                                         {
-                                                while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC && q[prev].qkey >= writerPriority1)
+                                                //kprintf (" \n Release All - Print 6 / 10");
+						prev = q[lptr->ltail].qprev;
+						while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC && q[prev].qkey >= writerPriority1)
                                                 {
-                                                       
+                                                 	//kprintf("\n 6/10 - reader prio\n", q[prev].qkey);      
                                                         lockAcquired(prev, lockdes, READ);
                                                         prev =  q[lptr->ltail].qprev;
                                                         
@@ -208,8 +214,8 @@ int release(int *ldes)
         	                                while(prev<NPROC)
                 	                        {
                         	                        if(proctab[prev].locksState[lockdes] == READ){
-                                	                        readerId = prev;
-                                        	                readerPriority = q[prev].qkey;
+                                	                        readerId1 = prev;
+                                        	                readerPriority1 = q[prev].qkey;
                                                 	        break;
                                                 	}
                                                 	prev =  q[prev].qprev;
@@ -221,16 +227,19 @@ int release(int *ldes)
                                         
 					if((readerPriority1 == writerPriority1) &&((&proctab[writerId1].procwaittime  -  &proctab[readerId1].procwaittime)  <= 400))
                                         {
+						//kprintf (" \n Release All - Print 7 / 10");
                                                 while((readerPriority1 == writerPriority1) && (&proctab[writerId1].procwaittime  -  &proctab[readerId1].procwaittime  <= 400) && (prev < NPROC))
                                                 {
+							//kprintf("\n 7.1 - readerId1 = %d", readerId1);
                                                         lockAcquired(readerId1, lockdes, READ);
 
                                                         prev = q[lptr->ltail].qprev;
+							//kprintf("\n 7.2 - PREV = %d", prev);
 							while(prev<NPROC)
                                                         {
                                                                 if(proctab[prev].locksState[lockdes] == READ){
-                                                                        readerId = prev;
-                                                                        readerPriority = q[prev].qkey;
+                                                                        readerId1 = prev;
+                                                                        readerPriority1 = q[prev].qkey;
                                                                          break;
                                                                 }
                                                                 prev =  q[prev].qprev;
@@ -244,6 +253,7 @@ int release(int *ldes)
                                 {
 				//kprintf("\nWRITER ID - CHECK 2\n");
                                 /* reader gets it */
+					//kprintf (" \n Release All - Print 8 / 10");
 					prev =  q[lptr->ltail].qprev;
 					while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC)
                                         	{
@@ -264,6 +274,7 @@ int release(int *ldes)
 		else
 		{
 			//kprintf("\nFREE STATE\n");
+			//kprintf (" \n Release All - Print 9 / 10");
 			lptr->lstate = LFREE;
                         pptr->locksState[lockdes] = EMPTY;
 		}
@@ -271,6 +282,7 @@ int release(int *ldes)
 	/* if there are more readeers using this lock */
  	else
         {
+		//kprintf (" \n Release All - Print 10 / 10");
                 proctab[currpid].locksState[lockdes] = EMPTY;
                 lptr->lstate = LUSED;
                 lptr->ltype = READ;

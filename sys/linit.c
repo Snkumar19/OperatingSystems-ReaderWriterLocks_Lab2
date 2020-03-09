@@ -14,7 +14,7 @@ void linit()
 
 	int i,j;	
 
-	kprintf("\nBefore Initializing");
+	//kprintf("\nBefore Initializing");
 
 	for (i = 0 ; i<NLOCKS ; i++) {	
 		(lptr = &locktab[i])->lstate = LFREE;
@@ -30,7 +30,7 @@ void linit()
 			lptr->deleteTracker[j] = LAVAILABLE;
 		}
 	}
-	kprintf("\nAfter Initializing");
+	//kprintf("\nAfter Initializing");
 
 /*
 	for (i = 0 ; i<NLOCKS ; i++) {
