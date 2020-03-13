@@ -7,7 +7,7 @@
 
 LOCAL int newlock();
 int print = -1;
-int lcreate()
+SYSCALL lcreate()
 {
 	STATWORD ps;    
 	int ldesc;

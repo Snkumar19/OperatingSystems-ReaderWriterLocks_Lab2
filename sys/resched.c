@@ -32,7 +32,7 @@ int resched()
 
 	if (optr->pstate == PRCURR) {
 		optr->pstate = PRREADY;
-		insert(currpid,rdyhead,optr->pprio);
+		insert(currpid,rdyhead,oprio);
 	}
 
 	/* remove highest priority process at end of ready list */

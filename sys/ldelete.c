@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <lock.h>
 
-int ldelete (int lockdescriptor)
+SYSCALL ldelete (int lockdescriptor)
 {
 	STATWORD ps;    
 	int	pid, i;

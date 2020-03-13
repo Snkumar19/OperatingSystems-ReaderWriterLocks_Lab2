@@ -10,7 +10,7 @@ extern unsigned long ctr1000;
 
 void waitForLock(int currpid, int ldes1, int type, int priority);
 
-int lock (int ldes1, int type, int priority){
+SYSCALL lock (int ldes1, int type, int priority){
 	
 	STATWORD ps;
 	int i = 0;
@@ -166,25 +166,8 @@ void waitForLock(int currpid, int ldes1, int type, int priority)
          pptr->procwaittime = ctr1000;
          insert(currpid, lptr->lhead, priority);
 	 pptr->pwaitret = OK;
+	 lptr->lprio = findMaxPriority(ldes1);
          findProcessWithLock(ldes1);
-         lptr->lprio = findMaxPriority(ldes1);
+         //lptr->lprio = findMaxPriority(ldes1);
 
 }
-/*
-int findLockOwner(ldes1)
-{
-	struct  lockentry *lptr = &locktab[ldes1];
-	if (ldes1 < 0 )
-		return SYSERR;
-	int i = 0 ;	
-	for (i = 0; i < NPROC; i++)
-	{
-		if(lptr->lproc[i] == LOCKACQ)
-			return i;
-	}
-	locktab[ldes1].lstate = LFREE;
-	return -1;
-}
-
-
-*/

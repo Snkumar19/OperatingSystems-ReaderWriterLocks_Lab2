@@ -130,7 +130,7 @@ void task1( )
 	testLock();
 	testSemaphore();
 
-        shutdown();
+        //shutdown();
 }
 
 

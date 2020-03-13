@@ -62,13 +62,7 @@ void findProcessWithLock(int ldes1)
 			/* Update the pinh value - if this process is in WQ & call the same function for all the processes associated with this lock till WQ is empty*/
         		if (pptr->lockid == NOTINWQ)
                 		return;
-        		else
-        		{
-                		lptr = &locktab[pptr->lockid];
-                		lptr->lprio = findMaxPriority(pptr->lockid);
-				//kprintf("\n LAST PART - lptr->lprio = %d", lptr->lprio);
-                             	findProcessWithLock(pptr->lockid);
-        		}	
+                   	findProcessWithLock(pptr->lockid);	
         	}
 	}
 

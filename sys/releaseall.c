@@ -6,7 +6,7 @@
 #include <lock.h>
 
 void lockAcquired(int highestWriterOrReader, int lockdes, int type);
-int releaseall (int numlocks, int args)
+SYSCALL releaseall (int numlocks, int args)
 {
 	 STATWORD ps;
         disable(ps);
@@ -38,7 +38,7 @@ int releaseall (int numlocks, int args)
 	return OK;
 }
 
-int release(int *ldes)
+SYSCALL release(int *ldes)
 {
 	 //STATWORD ps;
         //disable(ps);
@@ -199,7 +199,7 @@ int release(int *ldes)
 					//kprintf("\nWRITER ID - CHECK 1\n");
 					if(readerPriority1 > writerPriority1)
                                         {
-                                                //kprintf (" \n Release All - Print 6 / 10");
+                                               // kprintf (" \n Release All - Print 6 / 10");
 						prev = q[lptr->ltail].qprev;
 						while(proctab[prev].locksState[lockdes] == READ  && prev < NPROC && q[prev].qkey >= writerPriority1)
                                                 {
@@ -277,15 +277,17 @@ int release(int *ldes)
 			//kprintf (" \n Release All - Print 9 / 10");
 			lptr->lstate = LFREE;
                         pptr->locksState[lockdes] = EMPTY;
+			findProcessWithLock(lockdes); /* to set pinh to 0 */
 		}
 	}
-	/* if there are more readeers using this lock */
+	/* if there are more readers using this lock */
  	else
         {
 		//kprintf (" \n Release All - Print 10 / 10");
                 proctab[currpid].locksState[lockdes] = EMPTY;
                 lptr->lstate = LUSED;
                 lptr->ltype = READ;
+		findProcessWithLock(lockdes); /* to set pinh */
         }
   	//restore(ps);
   	return OK;
