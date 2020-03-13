@@ -1,0 +1,71 @@
+1.The priority inversion problem could cause that a higher-priority process needs to wait for the completion of a lower-priority process.
+	
+1.Priority inheritance is one approach to address this issue. Please give another approach and briefly describe its idea.
+
+Answer:
+
+The other approach would be to use priority ceiling:
+a)Processes have a fixed/default priority and an other one which is assigned during runtime.
+b)All the resources are assigned priority ceiling value i.e they are assigned the value of highest priority of any process which may use this resource.
+c)Once a process acquires a resource, process priority is changed to the priority ceiling value that is assigned to that resource.
+d)Example - There are 3 processes – A(30), B(20) and C(10) and 2 resources R1 and R2. Assume - R1 is used by A, B and C and R2 by B and C. 
+  In the case, R1 is set to 30 and R2 to 20. 
+  If C acquires R1, C will start executing with priority 30, because R1’s value is set to 30. If A or B try to access R1, they have to wait till C releases this. Once it releases R1, C’s priority is set t  o 10 again.
+e)Priority ceiling is of 2 type – Immediate Ceiling priority protocol (ICPP) and Original Ceiling priority protocol (OCPP)
+f)In OCPP – Priority value is increased only when there is a higher priority process trying to acquire the same resource that the first process has acquired.
+g)In ICPP – Priority is raised as soon as a process acquires a resource.
+
+Reference - https://en.wikipedia.org/wiki/Priority_ceiling_protocol
+
+
+
+
+
+2.Design a test case to show that your approach can address the priority inversion problem. You should compare the results that derived from the original XINU implementation (use semaphore) and that derived from your implementation (use readers/writer locks). Put your results in Lab2Answers.txt and your test case program (name it task1.c) in both ./sys and ./TMP
+
+Answer:
+
+Created 2 test cases - one with locks and the other one with semaphores. Both have 3 peocesses - L(30), M(40) and H(50).
+Workflow - First L acquires lock, H then tries to acquire this lock. While H is waiting for lock, M becomes runnable.
+
+
+Test case 1 with Locks - H waits for lock held by process L. With priority inheritance in place, L's priority is increased and it releases the lock. H aquires it, completes execution after which M completes execution.
+
+Output - 
+
+TEST : PRIORITY INHERITANCE R/W LOCKS 
+Start L...
+  L: to acquire lock
+  L: acquired lock,Sleep for 2 seconds
+Start H...
+  H: to acquire lock
+Start M...
+  M: sleep 1 seconds 
+  L: to release lock
+  H: acquired lock,
+  H: to release lock
+  M: ends 
+
+
+Test Case 2 with semaphore - H waits for lock held by process L. M having higher priority than L, executes first, after which L releases lock. H then acquires the lock and finishes execution(even though Hhas higher priority than M, it has to wait for M to complete its execution).
+
+Output - 
+
+ TEST : SEMAPHORE WITH PRIORITY INVERSION 
+Start L - Semaphore... 
+  L: to acquire sem 
+  L: acquired sem,Sleep for 2 seconds
+Start H - Semaphore...
+  H: to acquire semaphore
+Start M - Semaphore...
+  M:, sleep 1 seconds 
+  M:  ends 
+  L: to release lock
+  H: acquired sem
+  H: to release sem 
+
+2. Synchronization is a quite complex issue in operating systems. To show your understanding about process synchronization, you are asked to point out a potential problem in this pesudo-code: task2_sync_issue.c. Multiple reader processes can execute this code concurrently by calling reader(). You are asked to describe an issue it may cause and why it can happen. Put your answer in Lab2Answers.txt mentioned above.
+
+Answer:
+
+a) In this case, the writers can starve
