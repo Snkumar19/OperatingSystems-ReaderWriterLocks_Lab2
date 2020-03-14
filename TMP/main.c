@@ -221,107 +221,6 @@ void test3 ()
         kprintf ("Test 3 OK\n");
 }
 
-
-/*----------------------------------Test 4---------------------------*/
-char output4[10];
-int count4;
-int lck1, lck2;
-void reader4 (char msg, int lck, int lprio)
-{
-        int     ret;
-
-        kprintf ("  %c: to acquire lock\n", msg);
-        lock (lck, READ, lprio);
-        output4[count4++]=msg;
-        kprintf ("  %c: acquired lock, sleep 3s\n", msg);
-        sleep (3);
-        output4[count4++]=msg;
-        kprintf ("  %c: to release lock\n", msg);
-	releaseall (1, lck);
-}
-
-void writer41 (char msg, int lck, int lprio)
-{
-	kprintf ("  %c: to acquire lock\n", msg);
-        lock (lck1, WRITE, lprio);
-        output4[count4++]=msg;
-        kprintf ("  %c: acquired lock, sleep 3s\n", msg);
-        sleep (3);
-        output4[count4++]=msg;
-	lock (lck2, WRITE, lprio);
-	kprintf ("  %c: acquired lock2, sleep 3s\n", msg);
-	sleep (3);
-        kprintf ("  %c: to release lock\n", msg);
-        releaseall (2, lck1, lck2);
-}
-void writer42 (char msg, int lck, int lprio)
-{
-        kprintf ("  %c: to acquire lock\n", msg);
-        lock (lck2, WRITE, lprio);
-        output4[count4++]=msg;
-        kprintf ("  %c: acquired lock, sleep 3s\n", msg);
-        sleep (5);
-        output4[count4++]=msg;
-        kprintf ("  %c: to release lock\n", msg);
-        releaseall (1, lck2);
-}
-void writer43 (char msg, int lck, int lprio)
-{
-        kprintf ("  %c: to acquire lock\n", msg);
-        lock (lck1, WRITE, lprio);
-        output4[count4++]=msg;
-        kprintf ("  %c: acquired lock, sleep 3s\n", msg);
-        sleep (3);
-        output4[count4++]=msg;
-        kprintf ("  %c: to release lock\n", msg);
-        releaseall (1, lck1);
-}
-
-
-void test4 ()
-{
-        count4 = 0;
-        int     lck;
-        int     rd1, rd2, rd3, rd4;
-        int     wr1,wr2,wr3,wr4;
-
-        kprintf("\nTest 4: wait on locks with priority. Expected order of"
-		" lock acquisition is: reader A, reader B, reader D, writer C & reader E\n");
-        lck1  = lcreate ();
-	lck2  = lcreate ();	
-        //assert (lck != SYSERR, "Test 2 failed");
-
-	//rd1 = create(reader4, 2000, 30, "reader2", 3, 'A', lck, 20);
-	//rd2 = create(reader4, 2000, 32, "reader2", 3, 'B', lck, 30);
-	//rd3 = create(reader4, 2000, 44, "reader2", 3, 'D', lck, 44);
-	//rd4 = create(reader4, 2000, 45, "reader2", 3, 'E', lck, 45);
-        wr1 = create(writer41, 2000, 40, "writer2", 3, 'A', lck, 32);
-	wr2 = create(writer42, 2000, 42, "writer2", 3, 'B', lck, 32);
-	wr3 = create(writer43, 2000, 44, "writer2", 3, 'C', lck, 32);
-	//wr4 = create(writer4, 2000, 48, "writer2", 3, 'F', lck, 32);
-	
-        kprintf("-start reader A, then sleep 1s. lock granted to reader A\n");
-        resume(wr1);
-        sleep (1);
-	
-	kprintf("-start reader B. reader B is granted lock.\n");
-        resume (wr2);
-	sleep (1);
-
-        kprintf("-start writer C, then sleep 1s. writer waits for the lock\n");
-        resume(wr3);
-        //sleep (1);
-
-
-
-
-        sleep (15);
-        kprintf("output=%s\n", output4);
-        assert(mystrncmp(output4,"ABABCCDEED",10)==0,"Test 4 FAILED\n");
-        kprintf ("Test 4 OK\n");
-}
-
-
 int main( )
 {
         /* These test cases are only used for test purposes.
@@ -331,8 +230,7 @@ int main( )
 	test1();
 	test2();
 	test3();
-	task1();
-	test4();
+	//task1();
 
         /* The hook to shutdown QEMU for process-like execution of XINU.
  *          * This API call exists the QEMU process.

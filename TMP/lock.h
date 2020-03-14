@@ -28,13 +28,15 @@
 #define BEFORELCREATE 112
 
 void linit();
-int lcreate ();
-int ldelete (int lockdescriptor);
-int lock (int ldes1, int type, int priority); 
+SYSCALL lcreate ();
+SYSCALL ldelete (int lockdescriptor);
+SYSCALL lock (int ldes1, int type, int priority); 
+
 int findMaxPriority(int ldes1);
 //int updateMaxPrio(int ldes1, int currpid);
 int findPrio(int pid);
 void findProcessWithLock(int ldes1);
+void lockAcquired(int highestWriterOrReader, int lockdes, int type);
 void waitForLock(int currpid, int ldes1, int type, int priority);
 
 

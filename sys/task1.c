@@ -33,7 +33,9 @@ void lockWriter (char *msg, int lck, int control)
 	if (control == 1){
 
 		kprintf ("  %s: sleep 1 seconds \n", msg);
-		sleep(1);
+		int i = 0;
+		for ( i = 0; i < 3000; i++);
+		sleep(1); 
 		kprintf ("  %s: ends \n", msg);
         }
 }
@@ -90,6 +92,8 @@ void lockSem (char *msg, int sem, int control)
         if (control == 1){
 
                 kprintf ("  %s:, sleep 1 seconds \n", msg);
+		int i = 0;
+                for ( i = 0; i < 3000; i++);
                 sleep(1);
                 kprintf ("  %s:  ends \n", msg);
         }

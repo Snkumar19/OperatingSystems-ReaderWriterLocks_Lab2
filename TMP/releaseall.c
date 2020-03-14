@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <lock.h>
 
-void lockAcquired(int highestWriterOrReader, int lockdes, int type);
 SYSCALL releaseall (int numlocks, int args)
 {
 	 STATWORD ps;

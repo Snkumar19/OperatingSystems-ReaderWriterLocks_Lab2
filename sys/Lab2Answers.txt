@@ -8,15 +8,14 @@ The other approach would be to use priority ceiling:
 a)Processes have a fixed/default priority and an other one which is assigned during runtime.
 b)All the resources are assigned priority ceiling value i.e they are assigned the value of highest priority of any process which may use this resource.
 c)Once a process acquires a resource, process priority is changed to the priority ceiling value that is assigned to that resource.
-d)Example - There are 3 processes – A(30), B(20) and C(10) and 2 resources R1 and R2. Assume - R1 is used by A, B and C and R2 by B and C. 
+d)Example - There are 3 processes – H(30), M(20) and L(10) and 2 resources R1 and R2. Assume - R1 is used by H, M and L and R2 by M and L. 
   In the case, R1 is set to 30 and R2 to 20. 
-  If C acquires R1, C will start executing with priority 30, because R1’s value is set to 30. If A or B try to access R1, they have to wait till C releases this. Once it releases R1, C’s priority is set t  o 10 again.
+  If L acquires R1, L will start executing with priority 30, because R1’s value is set to 30. If H or M try to access R1, they have to wait till L releases this. Once it releases R1, L’s priority is set t  o 10 again.
 e)Priority ceiling is of 2 type – Immediate Ceiling priority protocol (ICPP) and Original Ceiling priority protocol (OCPP)
-f)In OCPP – Priority value is increased only when there is a higher priority process trying to acquire the same resource that the first process has acquired.
-g)In ICPP – Priority is raised as soon as a process acquires a resource.
+f)In Original Ceiling priority protocol – Priority value is increased only when there is a higher priority process trying to acquire the same resource that the first process has acquired.
+g)In Immediate Ceiling priority protocol – Priority is raised as soon as a process acquires a resource.
 
 Reference - https://en.wikipedia.org/wiki/Priority_ceiling_protocol
-
 
 
 
@@ -68,4 +67,14 @@ Start M - Semaphore...
 
 Answer:
 
-a) In this case, the writers can starve
+Explanation:
+In this Pseudocode, Reader tries to acquire the mutex to update the readcount variable. It then tries to acquire the semaphore "resource" if it's the first reader and, if the semaphore is available, proceeds to release the mutex and access a shared buffer to be read. It then gives up the semaphore "resource" if it's the last reader.
+The writer tries to acquire the semaphore "resource" before it writes after clearing the buffer and calls a function update_global_now and then proceeds to release the semaphore. 
+
+Problem:
+Let us consider the following case:
+Reader 1 comes to acquire the semaphore and acquires it. Before releasing the semaphore a writer gets scheduled, tries to access the buffer and can't access it because Reader 1 is holding to it. It then  waits on the resource. Even if there are multiple readers scheduled after the Writer is put on WAIT, all the readers will still be able to access the buffer though a process (Writer) which was scheduled before all these readers will be in WAIT state. The Writer will be able to access the buffer only when the last reader releases the semaphore. This doesn't ensure fairness, since it leads to the Writers to "Starve". In addition, even if all the subsquent readers have priorities lesser than the Writer, they can still execute and complete reading the buffer leading to Priority Inversion.
+
+A potential way to solve this issue, would be to ensure that neither the reader nor the writer starves because of the other. On the other hand, the Priority Inversion problem could be solved by using Reader/Writer Locks with Priority Inheritance.
+
+

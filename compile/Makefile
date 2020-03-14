@@ -442,9 +442,6 @@ lock.o: ../sys/lock.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/lock.h ../h/stdio.h
 main.o: ../sys/main.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/lock.h \
- ../h/stdio.h
-main-copy.o: ../sys/main-copy.c /usr/include/stdc-predef.h ../h/conf.h \
- ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/lock.h \
  ../h/q.h ../h/stdio.h
 mark.o: ../sys/mark.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/mark.h
