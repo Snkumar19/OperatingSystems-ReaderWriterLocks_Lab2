@@ -24,11 +24,11 @@ Reference - https://en.wikipedia.org/wiki/Priority_ceiling_protocol
 
 Answer:
 
-Created 2 test cases - one with locks and the other one with semaphores. Both have 3 peocesses - L(30), M(40) and H(50).
+Created 2 test cases - one with locks and the other one with semaphores. Both have 3 processes - L(30), M(40) and H(50).
 Workflow - First L acquires lock, H then tries to acquire this lock. While H is waiting for lock, M becomes runnable.
 
 
-Test case 1 with Locks - H waits for lock held by process L. With priority inheritance in place, L's priority is increased and it releases the lock. H aquires it, completes execution after which M completes execution.
+Test case 1 with Locks - H waits for lock held by process L. With priority inheritance in place, L's priority is increased and it releases the lock. H acquires it, completes execution after which M completes execution.
 
 Output - 
 
@@ -46,7 +46,7 @@ Start M...
   M: ends 
 
 
-Test Case 2 with semaphore - H waits for lock held by process L. M having higher priority than L, executes first, after which L releases lock. H then acquires the lock and finishes execution(even though Hhas higher priority than M, it has to wait for M to complete its execution).
+Test Case 2 with semaphore - H waits for lock held by process L. M having higher priority than L, executes first, after which L releases lock. H then acquires the lock and finishes execution(even though H has higher priority than M, it has to wait for M to complete its execution).
 
 Output - 
 
@@ -73,8 +73,9 @@ The writer tries to acquire the semaphore "resource" before it writes after clea
 
 Problem:
 Let us consider the following case:
-Reader 1 comes to acquire the semaphore and acquires it. Before releasing the semaphore a writer gets scheduled, tries to access the buffer and can't access it because Reader 1 is holding to it. It then  waits on the resource. Even if there are multiple readers scheduled after the Writer is put on WAIT, all the readers will still be able to access the buffer though a process (Writer) which was scheduled before all these readers will be in WAIT state. The Writer will be able to access the buffer only when the last reader releases the semaphore. This doesn't ensure fairness, since it leads to the Writers to "Starve". In addition, even if all the subsquent readers have priorities lesser than the Writer, they can still execute and complete reading the buffer leading to Priority Inversion.
+Reader 1 comes to acquire the semaphore and acquires it. Before releasing the semaphore a writer gets scheduled, tries to access the buffer and can't access it because Reader 1 is holding to it. It then  waits on the resource. Even if there are multiple readers scheduled after the Writer is put on WAIT, all the readers will still be able to access the buffer though a process (Writer) which was scheduled before all these readers will be in WAIT state. The Writer will be able to access the buffer only when the last reader releases the semaphore. This doesn't ensure fairness, since it leads to the Writers to "Starve". In addition, even if all the subsequent readers have priorities lesser than the Writer, they can still execute and complete reading the buffer leading to Priority Inversion.
 
 A potential way to solve this issue, would be to ensure that neither the reader nor the writer starves because of the other. On the other hand, the Priority Inversion problem could be solved by using Reader/Writer Locks with Priority Inheritance.
+
 
 
